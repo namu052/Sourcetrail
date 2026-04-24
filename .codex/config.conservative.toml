@@ -1,0 +1,44 @@
+# Codex CLI — Conservative profile (L1)  [Sourcetrail_Remake / Python]
+# 탐색·리뷰·민감 영역 작업 시. 거의 모든 변경에 사람 승인.
+
+approval_policy = "untrusted"
+sandbox_mode    = "read-only"
+network_access  = false
+auto_confirm    = false
+
+[shell]
+# read-only 명령만 자동
+allow = [
+  "git status",
+  "git diff*",
+  "git log*",
+  "git rev-parse*",
+  "git show*",
+  "git worktree list",
+  "bash scripts/structure-check.sh",
+  "bash scripts/docs-freshness.sh",
+  "bash scripts/check-adapter-sync.sh",
+  "bash scripts/changed-files.sh",
+  "uv run ruff check*",            # check만, --fix 금지
+  "uv run mypy --no-error-summary*",
+  "uv pip list*",
+]
+deny = [
+  "rm*", "mv*", "cp*-f*",
+  "git push*", "git reset*", "git checkout*--", "git clean*",
+  "git commit*", "git rebase*", "git merge*", "git add*",
+  "sudo *",
+  "uv add*", "uv sync*",           # 의존성 변경 금지
+  "uv run pytest*",                # 테스트도 사람 승인 후
+  "uv run ruff *--fix*",
+  "uv run python*",
+  "pip install*", "pip3 install*", "poetry *", "pipenv *", "conda *",
+]
+
+[paths]
+protected = ["**"]                 # 모두 read-only
+
+[workflow]
+require_exec_plan_above_loc = 0    # 어떤 변경도 plan 먼저
+self_review_before_pr      = true
+attach_quality_score       = true
