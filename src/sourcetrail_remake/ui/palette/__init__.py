@@ -1,0 +1,2 @@
+"""Command palette package."""
+
