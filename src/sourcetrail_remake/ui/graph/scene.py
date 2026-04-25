@@ -18,6 +18,7 @@ from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.core.types import GraphNeighborhood, GraphNodeRecord, NodeId, NodeType
 from sourcetrail_remake.db.reader import DatabaseReader
 from sourcetrail_remake.ui.graph.edges import BundledEdgeRecord, EdgeRenderer
+from sourcetrail_remake.ui.graph.layout import GraphLayoutEngine
 from sourcetrail_remake.ui.graph.nodes import NodeRenderer
 
 
@@ -33,6 +34,7 @@ class GraphScene(QGraphicsScene):
         super().__init__()
         self.reader = reader
         self.event_bus = event_bus
+        self.layout_engine = GraphLayoutEngine()
         self._node_items: dict[NodeId, QGraphicsItem] = {}
         self._edge_items: dict[int, QGraphicsPathItem] = {}
         self._selected_node_id: NodeId | None = None
@@ -72,7 +74,7 @@ class GraphScene(QGraphicsScene):
         self._selected_node_id = neighborhood.root_id
 
         ordered_nodes = tuple(sorted(neighborhood.nodes, key=lambda node: (node.member_count == 0, int(node.id))))
-        positions = self._grid_positions(ordered_nodes)
+        positions = self.layout_engine.compute_layout(neighborhood)
         node_map = {node.id: node for node in neighborhood.nodes}
 
         for node in ordered_nodes:
@@ -90,15 +92,7 @@ class GraphScene(QGraphicsScene):
         self._apply_selection_state()
         self.setSceneRect(self.itemsBoundingRect().adjusted(-48, -48, 48, 48))
         if node_map and self.event_bus is not None:
-            self.event_bus.layout_changed.emit("grid")
-
-    def _grid_positions(self, nodes: Iterable[GraphNodeRecord]) -> dict[NodeId, QPointF]:
-        positions: dict[NodeId, QPointF] = {}
-        for index, node in enumerate(nodes):
-            column = index % 3
-            row = index // 3
-            positions[node.id] = QPointF(60 + column * 260, 60 + row * 180)
-        return positions
+            self.event_bus.layout_changed.emit("sugiyama-force")
 
     def _add_node(self, node: GraphNodeRecord, position: QPointF, *, is_root: bool) -> QGraphicsItem:
         if node.is_unsolved:
