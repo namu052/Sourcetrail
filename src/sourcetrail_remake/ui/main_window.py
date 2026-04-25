@@ -14,9 +14,10 @@ from PyQt6.QtWidgets import (
 )
 
 from sourcetrail_remake.core.config import DEFAULT_CONFIG
-from sourcetrail_remake.core.types import GraphNodeRecord, NodeId
 from sourcetrail_remake.core.event_bus import EventBus
+from sourcetrail_remake.core.types import GraphNodeRecord, NodeId
 from sourcetrail_remake.db.reader import DatabaseReader
+from sourcetrail_remake.ui.controls.bookmarks import BookmarkControl
 from sourcetrail_remake.ui.controls.depth import DepthControl
 from sourcetrail_remake.ui.controls.zoom import ZoomControl
 from sourcetrail_remake.ui.graph.scene import GraphScene
@@ -103,6 +104,8 @@ class MainWindow(QMainWindow):
         self.depth_control.value_changed.connect(self._on_depth_changed)
         self.zoom_control.zoom_in_requested.connect(self.zoom_in)
         self.zoom_control.zoom_out_requested.connect(self.zoom_out)
+        self.bookmark_control.bookmark_selected.connect(self._focus_bookmark)
+        self.bookmark_control.bookmark_toggled.connect(self._on_bookmark_toggled)
 
     def _add_dock(
         self,
@@ -151,11 +154,13 @@ class MainWindow(QMainWindow):
         navigation_label.setObjectName("graph-navigation-label")
         self.symbol_tabs = SymbolTabBar(strip)
         self.search_bar = SymbolSearchBar(strip)
+        self.bookmark_control = BookmarkControl(strip)
 
         layout.addWidget(self.history_navigator)
         layout.addWidget(navigation_label)
         layout.addWidget(self.symbol_tabs, stretch=1)
         layout.addWidget(self.search_bar, stretch=1)
+        layout.addWidget(self.bookmark_control)
         return strip
 
     def _create_overview_panel(self) -> QWidget:
@@ -225,6 +230,7 @@ class MainWindow(QMainWindow):
         self.symbol_tabs.open_symbol(symbol)
         self._update_selection_panel(symbol)
         self.search_bar.set_current_symbol(symbol.serialized_name)
+        self.bookmark_control.set_current_symbol(symbol)
         if record_history:
             self._push_history(node_id)
         self._update_history_controls()
@@ -327,6 +333,18 @@ class MainWindow(QMainWindow):
     def zoom_out(self) -> None:
         self.graph_view.zoom_out()
         self.zoom_control.set_zoom_percent(self.graph_view.zoom_percent())
+
+    def _focus_bookmark(self, node_id: NodeId) -> None:
+        self.focus_symbol(node_id)
+
+    def _on_bookmark_toggled(self, node_id: NodeId, added: bool) -> None:
+        if added:
+            self.event_bus.bookmark_added.emit(node_id)
+        status_bar = self.statusBar()
+        assert status_bar is not None
+        status_bar.showMessage(
+            "Bookmark added" if added else f"Bookmark removed: {int(node_id)}"
+        )
 
 
 def create_main_window(
