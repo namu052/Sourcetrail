@@ -8,12 +8,13 @@ from PyQt6.QtCore import (
     QPointF,
     QPropertyAnimation,
 )
-from PyQt6.QtGui import QBrush, QColor
+from PyQt6.QtGui import QBrush, QColor, QTransform
 from PyQt6.QtWidgets import (
     QGraphicsItem,
     QGraphicsObject,
     QGraphicsPathItem,
     QGraphicsScene,
+    QGraphicsSceneMouseEvent,
 )
 
 from sourcetrail_remake.core.event_bus import EventBus
@@ -72,6 +73,9 @@ class GraphScene(QGraphicsScene):
         if self.event_bus is not None:
             self.event_bus.symbol_selected.emit(node_id)
         self._apply_selection_state()
+
+    def current_symbol_id(self) -> NodeId | None:
+        return self._selected_node_id
 
     def _show_placeholder(self, message: str) -> None:
         self.clear()
@@ -179,6 +183,17 @@ class GraphScene(QGraphicsScene):
         if node_id is not None:
             self.on_node_clicked(NodeId(int(node_id)))
 
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent | None) -> None:
+        if event is not None:
+            item = self.itemAt(event.scenePos(), QTransform())
+            if item is not None and item.data(0) is not None:
+                node_id = NodeId(int(item.data(0)))
+                if node_id == self._selected_node_id and node_id in self._member_nodes_by_parent:
+                    self.toggle_node_expansion(node_id)
+                    event.accept()
+                    return
+        super().mousePressEvent(event)
+
     def _apply_selection_state(self) -> None:
         for node_id, item in self._node_items.items():
             is_selected = node_id == self._selected_node_id
@@ -191,8 +206,20 @@ class GraphScene(QGraphicsScene):
         if not child_ids:
             return
         if node_id in self._collapsed_nodes:
-            self._collapsed_nodes.remove(node_id)
-            self._animate_child_nodes(node_id, child_ids, expand=True)
+            self.expand_node(node_id)
+            return
+        self.collapse_node(node_id)
+
+    def expand_node(self, node_id: NodeId) -> None:
+        child_ids = self._member_nodes_by_parent.get(node_id, [])
+        if not child_ids or node_id not in self._collapsed_nodes:
+            return
+        self._collapsed_nodes.remove(node_id)
+        self._animate_child_nodes(node_id, child_ids, expand=True)
+
+    def collapse_node(self, node_id: NodeId) -> None:
+        child_ids = self._member_nodes_by_parent.get(node_id, [])
+        if not child_ids or node_id in self._collapsed_nodes:
             return
         self._collapsed_nodes.add(node_id)
         self._animate_child_nodes(node_id, child_ids, expand=False)

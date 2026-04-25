@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PyQt6.QtCore import QPoint, Qt
-from PyQt6.QtGui import QMouseEvent, QPainter, QWheelEvent
+from PyQt6.QtGui import QKeyEvent, QMouseEvent, QPainter, QWheelEvent
 from PyQt6.QtWidgets import QGraphicsView
 
 from sourcetrail_remake.core.types import NodeId
@@ -23,6 +23,7 @@ class GraphView(QGraphicsView):
         self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
         self.setDragMode(QGraphicsView.DragMode.NoDrag)
         self.setBackgroundBrush(scene.backgroundBrush())
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
     @property
     def graph_scene(self) -> GraphScene:
@@ -82,6 +83,20 @@ class GraphView(QGraphicsView):
             event.accept()
             return
         super().mouseReleaseEvent(event)
+
+    def keyPressEvent(self, event: QKeyEvent | None) -> None:
+        if event is None:
+            return
+        current_symbol_id = self.graph_scene.current_symbol_id()
+        if current_symbol_id is not None and event.key() in {Qt.Key.Key_Plus, Qt.Key.Key_Equal}:
+            self.graph_scene.expand_node(current_symbol_id)
+            event.accept()
+            return
+        if current_symbol_id is not None and event.key() == Qt.Key.Key_Minus:
+            self.graph_scene.collapse_node(current_symbol_id)
+            event.accept()
+            return
+        super().keyPressEvent(event)
 
     def _apply_zoom_factor(self, factor: float) -> None:
         self.scale(factor, factor)
