@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<config>
+    <description>Phase 0 G1 manual validation fixture for sample-minimal.</description>
+    <source_groups>
+        <source_group_0a31129d-2f5e-5d61-b159-ff581b546e50>
+            <name>Sample Minimal Source Group</name>
+            <source_extensions>
+                <source_extension>.py</source_extension>
+            </source_extensions>
+            <source_paths>
+                <source_path>../../../tests/fixtures/sample-minimal</source_path>
+            </source_paths>
+            <status>enabled</status>
+            <type>Python Source Group</type>
+        </source_group_0a31129d-2f5e-5d61-b159-ff581b546e50>
+    </source_groups>
+    <version>8</version>
+</config>

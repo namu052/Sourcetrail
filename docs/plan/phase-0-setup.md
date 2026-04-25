@@ -317,14 +317,16 @@ CREATE TABLE node_extension (
 - [x] `docs/db-schema.md`에 **모든 테이블 + enum 100% 문서화**
 - [ ] PoC 3종 모두 스크린샷과 함께 수락 기준 통과
 - [x] `phase-1-wbs-detail.md` 작성 완료 (주 단위 → 일 단위 분해)
-- [ ] **리스크 게이트 G1 통과**: PoC 1 성공 (원본 GUI 열람 성공)
+- [x] **리스크 게이트 G1 통과**: PoC 1 성공 (원본 GUI 열람 성공)
 - [x] Phase 0 회고 문서 작성
 
 상태 메모:
 - 로컬 검증은 `scripts/verify-all.sh`, `scripts/run-tests.sh`, 각 PoC 실행으로 완료했다.
-- 미체크 항목은 모두 외부 환경 의존이다. 현재 워크스페이스에는 원본 Sourcetrail Windows GUI 바이너리가 없어 G1 수동 검증을 수행할 수 없다.
+- 원본 Sourcetrail Windows GUI 확인 기준 버전은 `Version 2021.4.19 - 64bit`이며, About 대화상자 기준 `Database Version 25`를 사용한다.
+- 사용자 수동 검증으로 위 GUI에서 `poc/01_jedi_to_sqlite/artifacts/sample-minimal.srctrlprj` 열람에 성공했고, 대응 DB `sample-minimal.srctrldb`가 overview에 로드되는 것을 확인했다.
+- 수동 검증 화면 기준으로 `41 symbols`, `40 references`, `0 errors (0 fatal)`이 표시되어 원본 GUI 호환 게이트(G1)는 통과로 기록한다.
 - GitHub Actions의 첫 Windows 실행 이력은 아직 없어 CI "green" 항목은 원격 파이프라인 실행 후 최종 체크가 필요하다.
-- PoC 1은 `.srctrldb` 생성과 스키마 검증까지 통과했지만, 원본 GUI 열람 검증이 남아 있어 DoD상 완전 통과로 표기하지 않았다.
+- 다만 Smart Search 기반 심볼 drill-down (`SessionManager`, `Session`, `cleanup_expired`, `missing_cleanup_handler`)은 별도 후속 검증으로 남긴다.
 
 ---
 
