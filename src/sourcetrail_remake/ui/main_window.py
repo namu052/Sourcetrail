@@ -20,6 +20,7 @@ from sourcetrail_remake.db.reader import DatabaseReader
 from sourcetrail_remake.ui.graph.scene import GraphScene
 from sourcetrail_remake.ui.graph.view import GraphView
 from sourcetrail_remake.ui.navigation.history import HistoryNavigator
+from sourcetrail_remake.ui.navigation.search import SymbolSearchBar
 from sourcetrail_remake.ui.navigation.tabs import SymbolTabBar
 
 
@@ -96,6 +97,7 @@ class MainWindow(QMainWindow):
         self.history_navigator.forward_requested.connect(self.navigate_forward)
         self.history_navigator.home_requested.connect(self.navigate_home)
         self.history_navigator.history_requested.connect(self.navigate_to_history_entry)
+        self.search_bar.search_requested.connect(self.focus_symbol_by_name)
 
     def _add_dock(
         self,
@@ -143,10 +145,12 @@ class MainWindow(QMainWindow):
         navigation_label = QLabel("Symbols", strip)
         navigation_label.setObjectName("graph-navigation-label")
         self.symbol_tabs = SymbolTabBar(strip)
+        self.search_bar = SymbolSearchBar(strip)
 
         layout.addWidget(self.history_navigator)
         layout.addWidget(navigation_label)
         layout.addWidget(self.symbol_tabs, stretch=1)
+        layout.addWidget(self.search_bar, stretch=1)
         return strip
 
     def _create_selection_panel(self) -> QWidget:
@@ -193,6 +197,7 @@ class MainWindow(QMainWindow):
         self.graph_view.focus_symbol(node_id, depth=1)
         self.symbol_tabs.open_symbol(symbol)
         self._update_selection_panel(symbol)
+        self.search_bar.set_current_symbol(symbol.serialized_name)
         if record_history:
             self._push_history(node_id)
         self._update_history_controls()
@@ -270,6 +275,17 @@ class MainWindow(QMainWindow):
         if symbol is None:
             return str(int(node_id))
         return symbol.serialized_name
+
+    def focus_symbol_by_name(self, serialized_name: str) -> None:
+        if self.reader is None or not serialized_name:
+            return
+        symbol_id = self.reader.find_symbol_id(serialized_name)
+        if symbol_id is None:
+            status_bar = self.statusBar()
+            assert status_bar is not None
+            status_bar.showMessage(f"Symbol not found: {serialized_name}")
+            return
+        self.focus_symbol(symbol_id)
 
 
 def create_main_window(
