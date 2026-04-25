@@ -1,0 +1,204 @@
+{
+  "fixture": "tests/fixtures/sample-minimal/session_manager.py",
+  "database": "poc/01_jedi_to_sqlite/artifacts/sample-minimal.srctrldb",
+  "definition_count": 39,
+  "unsolved_symbol_count": 1,
+  "missing_tables": [],
+  "created_nodes": [
+    {
+      "id": 100,
+      "name": "annotations",
+      "type": "instance"
+    },
+    {
+      "id": 101,
+      "name": "dataclass",
+      "type": "module"
+    },
+    {
+      "id": 102,
+      "name": "field",
+      "type": "module"
+    },
+    {
+      "id": 103,
+      "name": "UTC",
+      "type": "module"
+    },
+    {
+      "id": 104,
+      "name": "datetime",
+      "type": "class"
+    },
+    {
+      "id": 105,
+      "name": "timedelta",
+      "type": "class"
+    },
+    {
+      "id": 106,
+      "name": "Session",
+      "type": "class"
+    },
+    {
+      "id": 107,
+      "name": "user_id",
+      "type": "statement"
+    },
+    {
+      "id": 108,
+      "name": "created_at",
+      "type": "statement"
+    },
+    {
+      "id": 109,
+      "name": "last_active",
+      "type": "statement"
+    },
+    {
+      "id": 110,
+      "name": "timeout_seconds",
+      "type": "statement"
+    },
+    {
+      "id": 111,
+      "name": "touch",
+      "type": "function"
+    },
+    {
+      "id": 112,
+      "name": "self",
+      "type": "param"
+    },
+    {
+      "id": 113,
+      "name": "last_active",
+      "type": "statement"
+    },
+    {
+      "id": 114,
+      "name": "is_expired",
+      "type": "function"
+    },
+    {
+      "id": 115,
+      "name": "self",
+      "type": "param"
+    },
+    {
+      "id": 116,
+      "name": "now",
+      "type": "param"
+    },
+    {
+      "id": 117,
+      "name": "current",
+      "type": "statement"
+    },
+    {
+      "id": 118,
+      "name": "SessionManager",
+      "type": "class"
+    },
+    {
+      "id": 119,
+      "name": "__init__",
+      "type": "function"
+    },
+    {
+      "id": 120,
+      "name": "self",
+      "type": "param"
+    },
+    {
+      "id": 121,
+      "name": "_sessions",
+      "type": "statement"
+    },
+    {
+      "id": 122,
+      "name": "create_session",
+      "type": "function"
+    },
+    {
+      "id": 123,
+      "name": "self",
+      "type": "param"
+    },
+    {
+      "id": 124,
+      "name": "user_id",
+      "type": "param"
+    },
+    {
+      "id": 125,
+      "name": "session",
+      "type": "statement"
+    },
+    {
+      "id": 126,
+      "name": "get_session",
+      "type": "function"
+    },
+    {
+      "id": 127,
+      "name": "self",
+      "type": "param"
+    },
+    {
+      "id": 128,
+      "name": "user_id",
+      "type": "param"
+    },
+    {
+      "id": 129,
+      "name": "session",
+      "type": "statement"
+    },
+    {
+      "id": 130,
+      "name": "cleanup_expired",
+      "type": "function"
+    },
+    {
+      "id": 131,
+      "name": "self",
+      "type": "param"
+    },
+    {
+      "id": 132,
+      "name": "expired_users",
+      "type": "statement"
+    },
+    {
+      "id": 133,
+      "name": "user_id",
+      "type": "statement"
+    },
+    {
+      "id": 134,
+      "name": "session",
+      "type": "statement"
+    },
+    {
+      "id": 135,
+      "name": "count_active_sessions",
+      "type": "function"
+    },
+    {
+      "id": 136,
+      "name": "manager",
+      "type": "param"
+    },
+    {
+      "id": 137,
+      "name": "build_demo_manager",
+      "type": "function"
+    },
+    {
+      "id": 138,
+      "name": "manager",
+      "type": "statement"
+    }
+  ]
+}
