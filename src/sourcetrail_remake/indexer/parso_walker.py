@@ -25,9 +25,16 @@ class ParsoWalker:
         source = resolved_path.read_text(encoding="utf-8")
         module = parso.parse(source)
         symbols: list[ParsedSymbol] = []
+        keyword_argument_labels: set[tuple[int, int]] = set()
         module_name = self._module_name(resolved_path)
         self._walk_children(module.children, module_path=resolved_path, module_name=module_name, symbols=symbols)
-        return ParsedModule(path=resolved_path, source=source, symbols=tuple(symbols))
+        self._collect_keyword_argument_labels(module, keyword_argument_labels)
+        return ParsedModule(
+            path=resolved_path,
+            source=source,
+            symbols=tuple(symbols),
+            keyword_argument_labels=frozenset(keyword_argument_labels),
+        )
 
     def walk_project(self, paths: list[Path]) -> list[ParsedModule]:
         return [self.parse_module(path) for path in paths]
@@ -181,3 +188,19 @@ class ParsoWalker:
         else:
             module_parts = [*parts[:-1], stem]
         return ".".join(module_parts) if module_parts else self.project_root.name
+
+    def _collect_keyword_argument_labels(
+        self,
+        node: object,
+        keyword_argument_labels: set[tuple[int, int]],
+    ) -> None:
+        if getattr(node, "type", None) == "argument":
+            children = getattr(node, "children", [])
+            if (
+                len(children) >= 2
+                and getattr(children[0], "type", None) == "name"
+                and getattr(children[1], "value", None) == "="
+            ):
+                keyword_argument_labels.add(tuple(children[0].start_pos))
+        for child in getattr(node, "children", []):
+            self._collect_keyword_argument_labels(child, keyword_argument_labels)

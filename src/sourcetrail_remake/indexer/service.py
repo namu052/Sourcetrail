@@ -178,7 +178,7 @@ class IndexerService:
                 references=True,
             )
             for occurrence in references:
-                if occurrence.name in IGNORED_REFERENCE_NAMES:
+                if self._should_ignore_occurrence(indexed, occurrence):
                     continue
                 source_node = scope_lookup.resolve(
                     line=occurrence.location.start_line,
@@ -249,7 +249,7 @@ class IndexerService:
                 references=True,
             )
             for occurrence in references:
-                if occurrence.name in IGNORED_REFERENCE_NAMES:
+                if self._should_ignore_occurrence(indexed, occurrence):
                     continue
                 source_node = scope_lookup.resolve(
                     line=occurrence.location.start_line,
@@ -458,3 +458,11 @@ class IndexerService:
         except ValueError:
             return False
         return True
+
+    def _should_ignore_occurrence(self, indexed: _IndexedModule, occurrence: NameOccurrence) -> bool:
+        if occurrence.name in IGNORED_REFERENCE_NAMES:
+            return True
+        return (
+            occurrence.location.start_line,
+            occurrence.location.start_column,
+        ) in indexed.parsed.keyword_argument_labels

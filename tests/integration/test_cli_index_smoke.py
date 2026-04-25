@@ -17,7 +17,7 @@ from sourcetrail_remake.db.reader import DatabaseReader
     [
         ("sample-django", "blog.models.UserProfile", 20),
         ("sample-flask", "app.health", 20),
-        ("sample-requests", "client.fetch_status", 10),
+        ("sample-requests", "client.fetch_status", 0),
     ],
 )
 def test_srm_index_cli_smoke(sample_name: str, expected_symbol: str, max_unsolved: int) -> None:

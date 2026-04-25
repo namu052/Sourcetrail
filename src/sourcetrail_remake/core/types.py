@@ -135,6 +135,7 @@ class ParsedModule:
     path: Path
     source: str
     symbols: tuple[ParsedSymbol, ...]
+    keyword_argument_labels: frozenset[tuple[int, int]]
 
 
 @dataclass(slots=True, frozen=True)
