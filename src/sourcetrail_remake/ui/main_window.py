@@ -17,6 +17,7 @@ from sourcetrail_remake.core.config import DEFAULT_CONFIG
 from sourcetrail_remake.core.types import GraphNodeRecord, NodeId
 from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.db.reader import DatabaseReader
+from sourcetrail_remake.ui.controls.depth import DepthControl
 from sourcetrail_remake.ui.graph.scene import GraphScene
 from sourcetrail_remake.ui.graph.view import GraphView
 from sourcetrail_remake.ui.navigation.history import HistoryNavigator
@@ -39,6 +40,7 @@ class MainWindow(QMainWindow):
         self.reader = reader
         self.initial_symbol_id = initial_symbol_id
         self.current_symbol_id: NodeId | None = None
+        self.current_depth = 1
         self.home_symbol_id: NodeId | None = initial_symbol_id
         self.history_entries: list[NodeId] = []
         self.history_index = -1
@@ -70,10 +72,7 @@ class MainWindow(QMainWindow):
             title="Graph Overview",
             area=Qt.DockWidgetArea.LeftDockWidgetArea,
             object_name="graph-overview-dock",
-            widget=self._create_label_panel(
-                "Overview",
-                "Tabs, search, depth, zoom, and bookmark controls attach incrementally in Week 7-8.",
-            ),
+            widget=self._create_overview_panel(),
         )
         self._add_dock(
             title="Selection",
@@ -100,6 +99,7 @@ class MainWindow(QMainWindow):
         self.history_navigator.home_requested.connect(self.navigate_home)
         self.history_navigator.history_requested.connect(self.navigate_to_history_entry)
         self.search_bar.search_requested.connect(self.focus_symbol_by_name)
+        self.depth_control.value_changed.connect(self._on_depth_changed)
 
     def _add_dock(
         self,
@@ -155,6 +155,26 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.search_bar, stretch=1)
         return strip
 
+    def _create_overview_panel(self) -> QWidget:
+        panel = QWidget(self)
+        panel.setObjectName("graph-overview-panel")
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(12)
+
+        overview_label = QLabel("Overview", panel)
+        overview_label.setObjectName("overview-heading-label")
+        helper_label = QLabel("Adjust BFS expansion depth for the current graph.", panel)
+        helper_label.setWordWrap(True)
+        helper_label.setObjectName("overview-helper-label")
+        self.depth_control = DepthControl(panel)
+
+        layout.addWidget(overview_label)
+        layout.addWidget(helper_label)
+        layout.addWidget(self.depth_control, alignment=Qt.AlignmentFlag.AlignHCenter)
+        layout.addStretch(1)
+        return panel
+
     def _create_selection_panel(self) -> QWidget:
         panel = QWidget(self)
         layout = QVBoxLayout(panel)
@@ -196,7 +216,7 @@ class MainWindow(QMainWindow):
         if self.home_symbol_id is None:
             self.home_symbol_id = node_id
         self.current_symbol_id = node_id
-        self.graph_view.focus_symbol(node_id, depth=1)
+        self.graph_view.focus_symbol(node_id, depth=self.current_depth)
         self.symbol_tabs.open_symbol(symbol)
         self._update_selection_panel(symbol)
         self.search_bar.set_current_symbol(symbol.serialized_name)
@@ -288,6 +308,11 @@ class MainWindow(QMainWindow):
             status_bar.showMessage(f"Symbol not found: {serialized_name}")
             return
         self.focus_symbol(symbol_id)
+
+    def _on_depth_changed(self, value: int) -> None:
+        self.current_depth = value
+        if self.current_symbol_id is not None:
+            self.focus_symbol(self.current_symbol_id, record_history=False)
 
 
 def create_main_window(
