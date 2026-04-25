@@ -18,6 +18,7 @@ from sourcetrail_remake.core.types import GraphNodeRecord, NodeId
 from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.db.reader import DatabaseReader
 from sourcetrail_remake.ui.controls.depth import DepthControl
+from sourcetrail_remake.ui.controls.zoom import ZoomControl
 from sourcetrail_remake.ui.graph.scene import GraphScene
 from sourcetrail_remake.ui.graph.view import GraphView
 from sourcetrail_remake.ui.navigation.history import HistoryNavigator
@@ -100,6 +101,8 @@ class MainWindow(QMainWindow):
         self.history_navigator.history_requested.connect(self.navigate_to_history_entry)
         self.search_bar.search_requested.connect(self.focus_symbol_by_name)
         self.depth_control.value_changed.connect(self._on_depth_changed)
+        self.zoom_control.zoom_in_requested.connect(self.zoom_in)
+        self.zoom_control.zoom_out_requested.connect(self.zoom_out)
 
     def _add_dock(
         self,
@@ -168,10 +171,12 @@ class MainWindow(QMainWindow):
         helper_label.setWordWrap(True)
         helper_label.setObjectName("overview-helper-label")
         self.depth_control = DepthControl(panel)
+        self.zoom_control = ZoomControl(panel)
 
         layout.addWidget(overview_label)
         layout.addWidget(helper_label)
         layout.addWidget(self.depth_control, alignment=Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(self.zoom_control)
         layout.addStretch(1)
         return panel
 
@@ -223,6 +228,7 @@ class MainWindow(QMainWindow):
         if record_history:
             self._push_history(node_id)
         self._update_history_controls()
+        self.zoom_control.set_zoom_percent(self.graph_view.zoom_percent())
 
         status_bar = self.statusBar()
         assert status_bar is not None
@@ -313,6 +319,14 @@ class MainWindow(QMainWindow):
         self.current_depth = value
         if self.current_symbol_id is not None:
             self.focus_symbol(self.current_symbol_id, record_history=False)
+
+    def zoom_in(self) -> None:
+        self.graph_view.zoom_in()
+        self.zoom_control.set_zoom_percent(self.graph_view.zoom_percent())
+
+    def zoom_out(self) -> None:
+        self.graph_view.zoom_out()
+        self.zoom_control.set_zoom_percent(self.graph_view.zoom_percent())
 
 
 def create_main_window(

@@ -16,6 +16,7 @@ class GraphView(QGraphicsView):
     def __init__(self, scene: GraphScene) -> None:
         super().__init__(scene)
         self._last_pan_pos: QPoint | None = None
+        self._zoom_percent = 100
         self.setObjectName("graph-view")
         self.setRenderHints(QPainter.RenderHint.Antialiasing | QPainter.RenderHint.TextAntialiasing)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
@@ -31,13 +32,24 @@ class GraphView(QGraphicsView):
 
     def focus_symbol(self, symbol_id: NodeId, depth: int) -> None:
         self.graph_scene.load_symbol(symbol_id, depth)
+        self.resetTransform()
         self.fitInView(self.graph_scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+        self._zoom_percent = 100
+
+    def zoom_percent(self) -> int:
+        return self._zoom_percent
+
+    def zoom_in(self) -> None:
+        self._apply_zoom_factor(1.15)
+
+    def zoom_out(self) -> None:
+        self._apply_zoom_factor(1 / 1.15)
 
     def wheelEvent(self, event: QWheelEvent | None) -> None:
         if event is None:
             return
         factor = 1.15 if event.angleDelta().y() > 0 else 1 / 1.15
-        self.scale(factor, factor)
+        self._apply_zoom_factor(factor)
 
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
         if event is None:
@@ -70,3 +82,7 @@ class GraphView(QGraphicsView):
             event.accept()
             return
         super().mouseReleaseEvent(event)
+
+    def _apply_zoom_factor(self, factor: float) -> None:
+        self.scale(factor, factor)
+        self._zoom_percent = max(25, min(400, int(round(self._zoom_percent * factor))))
