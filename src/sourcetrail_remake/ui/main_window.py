@@ -14,14 +14,20 @@ from PyQt6.QtWidgets import (
 
 from sourcetrail_remake.core.config import DEFAULT_CONFIG
 from sourcetrail_remake.core.event_bus import EventBus
+from sourcetrail_remake.db.reader import DatabaseReader
+from sourcetrail_remake.ui.graph.scene import GraphScene
+from sourcetrail_remake.ui.graph.view import GraphView
 
 
 class MainWindow(QMainWindow):
     """Application shell with the dock layout required for the graph workflow."""
 
-    def __init__(self, event_bus: EventBus):
+    def __init__(self, event_bus: EventBus, *, reader: DatabaseReader | None = None):
         super().__init__()
         self.event_bus = event_bus
+        self.reader = reader
+        self.graph_scene = GraphScene(reader=reader, event_bus=event_bus)
+        self.graph_view = GraphView(self.graph_scene)
         self.setWindowTitle(DEFAULT_CONFIG.main_window_title)
         self.resize(1440, 900)
         self._build_shell()
@@ -30,15 +36,11 @@ class MainWindow(QMainWindow):
         self.setDockNestingEnabled(True)
         self.setDocumentMode(True)
 
-        graph_placeholder = QLabel("Graph view will load here")
-        graph_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        graph_placeholder.setObjectName("graph-placeholder-label")
-
         central = QWidget(self)
         central.setObjectName("graph-central-shell")
         central_layout = QVBoxLayout(central)
         central_layout.setContentsMargins(12, 12, 12, 12)
-        central_layout.addWidget(graph_placeholder)
+        central_layout.addWidget(self.graph_view)
         self.setCentralWidget(central)
 
         self._add_dock(

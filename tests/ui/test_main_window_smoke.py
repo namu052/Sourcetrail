@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QDockWidget, QStatusBar
 
 from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.ui.main_window import create_main_window
+from sourcetrail_remake.ui.graph.view import GraphView
 
 
 @pytest.mark.ui
@@ -17,6 +18,7 @@ def test_main_window_smoke(qtbot) -> None:
     assert window.windowTitle() == "Sourcetrail_Remake"
     assert window.centralWidget() is not None
     assert window.findChild(QStatusBar) is not None
+    assert window.findChild(GraphView, "graph-view") is not None
     assert window.findChild(QDockWidget, "graph-overview-dock") is not None
     assert window.findChild(QDockWidget, "graph-selection-dock") is not None
     assert window.findChild(QDockWidget, "graph-log-dock") is not None

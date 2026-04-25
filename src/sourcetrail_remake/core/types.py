@@ -170,6 +170,33 @@ class DatabaseSummary:
 
 
 @dataclass(slots=True, frozen=True)
+class GraphNodeRecord:
+    id: NodeId
+    serialized_name: str
+    display_name: str
+    node_type: NodeType
+    member_count: int
+    is_unsolved: bool = False
+    parent_id: NodeId | None = None
+
+
+@dataclass(slots=True, frozen=True)
+class GraphEdgeRecord:
+    id: EdgeId
+    source: NodeId
+    target: NodeId
+    edge_type: EdgeType
+
+
+@dataclass(slots=True, frozen=True)
+class GraphNeighborhood:
+    root_id: NodeId
+    depth: int
+    nodes: tuple[GraphNodeRecord, ...]
+    edges: tuple[GraphEdgeRecord, ...]
+
+
+@dataclass(slots=True, frozen=True)
 class IndexResult:
     project_root: Path
     mode: IndexingMode
