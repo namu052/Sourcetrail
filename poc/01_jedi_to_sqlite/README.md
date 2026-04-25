@@ -13,11 +13,13 @@ uv run python poc/01_jedi_to_sqlite/run.py
 - `poc/01_jedi_to_sqlite/artifacts/sample-minimal.srctrldb`
 - `poc/01_jedi_to_sqlite/artifacts/sample-minimal.srctrlprj`
 - `poc/01_jedi_to_sqlite/artifacts/report.json`
+- `poc/01_jedi_to_sqlite/artifacts/original_gui_open.png`
 
 ## Manual Gate Status
 
 - 원본 Sourcetrail GUI `Version 2021.4.19 - 64bit` / `Database Version 25` 기준으로 `sample-minimal.srctrlprj` 열람 성공.
 - Overview 패널에서 `41 symbols`, `40 references`, `0 errors (0 fatal)` 확인.
+- 수동 검증 스크린샷은 `artifacts/original_gui_open.png` 에 저장했다.
 - Smart Search 기반 심볼 drill-down은 별도 후속 검증 항목으로 남겨둔다.
 
 ## G1 Manual Validation Helper

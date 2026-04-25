@@ -315,7 +315,7 @@ CREATE TABLE node_extension (
 - [x] `uv run python -m sourcetrail_remake` 으로 빈 `QMainWindow` 기동
 - [x] Windows CI가 **lint + type-check + empty tests** 모두 green
 - [x] `docs/db-schema.md`에 **모든 테이블 + enum 100% 문서화**
-- [ ] PoC 3종 모두 스크린샷과 함께 수락 기준 통과
+- [x] PoC 3종 모두 스크린샷과 함께 수락 기준 통과
 - [x] `phase-1-wbs-detail.md` 작성 완료 (주 단위 → 일 단위 분해)
 - [x] **리스크 게이트 G1 통과**: PoC 1 성공 (원본 GUI 열람 성공)
 - [x] Phase 0 회고 문서 작성
@@ -325,7 +325,8 @@ CREATE TABLE node_extension (
 - 원본 Sourcetrail Windows GUI 확인 기준 버전은 `Version 2021.4.19 - 64bit`이며, About 대화상자 기준 `Database Version 25`를 사용한다.
 - 사용자 수동 검증으로 위 GUI에서 `poc/01_jedi_to_sqlite/artifacts/sample-minimal.srctrlprj` 열람에 성공했고, 대응 DB `sample-minimal.srctrldb`가 overview에 로드되는 것을 확인했다.
 - 수동 검증 화면 기준으로 `41 symbols`, `40 references`, `0 errors (0 fatal)`이 표시되어 원본 GUI 호환 게이트(G1)는 통과로 기록한다.
-- GitHub Actions PR `namu052/Sourcetrail#1`에서 commit `d9fd58f1` 기준 `ci` run #3, `harness-gate` run #3가 모두 green으로 완료됐다.
+- PoC screenshot artifact는 `poc/01_jedi_to_sqlite/artifacts/original_gui_open.png`, `poc/02_editor_hello/artifacts/editor_hello.png`, `poc/03_graph_hello/artifacts/graph_hello.png` 로 정리했다.
+- GitHub Actions PR `namu052/Sourcetrail#1`에서 최신 Windows runs (`ci`, `harness-gate`) 가 모두 green으로 완료됐다.
 - 다만 Smart Search 기반 심볼 drill-down (`SessionManager`, `Session`, `cleanup_expired`, `missing_cleanup_handler`)은 별도 후속 검증으로 남긴다.
 
 ---
@@ -342,7 +343,7 @@ CREATE TABLE node_extension (
 
 ## 회고 (Phase 종료 후 작성)
 
-> 핵심 구현과 원격 Windows CI, 원본 GUI 열람 검증까지 마쳤고, PoC acceptance 증적 보강만 남은 상태에서 기록한다.
+> 핵심 구현, 원격 Windows CI, 원본 GUI 열람 검증, PoC screenshot evidence 정리까지 마친 상태에서 기록한다.
 
 **잘 된 점**:
 - `uv` 기반 Python 3.12 환경, 최소 앱 셸, 테스트/문서/CI 뼈대를 Phase 0 안에서 일관되게 세팅했다.
@@ -355,10 +356,9 @@ CREATE TABLE node_extension (
 
 **다음 Phase로 이월된 항목**:
 - Smart Search 기반 심볼 drill-down (`SessionManager`, `Session`, `cleanup_expired`, `missing_cleanup_handler`) 후속 검증
-- PoC 3종 스크린샷 artifact 정리 및 acceptance evidence 보강
 
 **타임라인 대비 실적**:
-- 계획: 2주 / 실제: 2주 구현 완료, 후속 acceptance 증적 보강 1건 잔여
+- 계획: 2주 / 실제: 2주 구현 및 Phase 0 close-out 완료
 
 **배운 점 (Phase 1에 반영)**:
 - 호환성 이슈는 문서 추정이 아니라 실제 생성 SQL과 작은 재현 fixture로 먼저 고정하는 편이 빠르다.
