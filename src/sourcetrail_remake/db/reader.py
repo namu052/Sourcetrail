@@ -58,6 +58,29 @@ class DatabaseReader:
             nodes = self._load_nodes(connection, {int(symbol_id)})
         return nodes[0] if nodes else None
 
+    def list_symbols(
+        self,
+        *,
+        limit: int | None = None,
+        include_files: bool = False,
+    ) -> tuple[GraphNodeRecord, ...]:
+        query = "SELECT id FROM node "
+        parameters: list[int] = []
+        if not include_files:
+            query += "WHERE type != ? "
+            parameters.append(int(NodeType.NODE_FILE))
+        query += "ORDER BY serialized_name"
+        if limit is not None:
+            query += " LIMIT ?"
+            parameters.append(limit)
+
+        with sqlite3.connect(self.db_path) as connection:
+            node_ids = {
+                int(row[0])
+                for row in connection.execute(query, parameters).fetchall()
+            }
+            return self._load_nodes(connection, node_ids)
+
     def list_unsolved(self) -> list[tuple[NodeId, str]]:
         with sqlite3.connect(self.db_path) as connection:
             rows = connection.execute(

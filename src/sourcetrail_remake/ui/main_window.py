@@ -48,6 +48,8 @@ class MainWindow(QMainWindow):
         self.resize(1440, 900)
         self._build_shell()
         self._connect_signals()
+        if self.reader is not None:
+            self.search_bar.set_catalog(self.reader.list_symbols())
         if self.reader is not None and self.initial_symbol_id is not None:
             self.focus_symbol(self.initial_symbol_id)
 
