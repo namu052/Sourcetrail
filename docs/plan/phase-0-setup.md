@@ -312,13 +312,19 @@ CREATE TABLE node_extension (
 
 ## Phase 0 DoD (Definition of Done)
 
-- [ ] `uv run python -m sourcetrail_remake` 으로 빈 `QMainWindow` 기동
+- [x] `uv run python -m sourcetrail_remake` 으로 빈 `QMainWindow` 기동
 - [ ] Windows CI가 **lint + type-check + empty tests** 모두 green
-- [ ] `docs/db-schema.md`에 **모든 테이블 + enum 100% 문서화**
+- [x] `docs/db-schema.md`에 **모든 테이블 + enum 100% 문서화**
 - [ ] PoC 3종 모두 스크린샷과 함께 수락 기준 통과
-- [ ] `phase-1-wbs-detail.md` 작성 완료 (주 단위 → 일 단위 분해)
+- [x] `phase-1-wbs-detail.md` 작성 완료 (주 단위 → 일 단위 분해)
 - [ ] **리스크 게이트 G1 통과**: PoC 1 성공 (원본 GUI 열람 성공)
-- [ ] Phase 0 회고 문서 작성
+- [x] Phase 0 회고 문서 작성
+
+상태 메모:
+- 로컬 검증은 `scripts/verify-all.sh`, `scripts/run-tests.sh`, 각 PoC 실행으로 완료했다.
+- 미체크 항목은 모두 외부 환경 의존이다. 현재 워크스페이스에는 원본 Sourcetrail Windows GUI 바이너리가 없어 G1 수동 검증을 수행할 수 없다.
+- GitHub Actions의 첫 Windows 실행 이력은 아직 없어 CI "green" 항목은 원격 파이프라인 실행 후 최종 체크가 필요하다.
+- PoC 1은 `.srctrldb` 생성과 스키마 검증까지 통과했지만, 원본 GUI 열람 검증이 남아 있어 DoD상 완전 통과로 표기하지 않았다.
 
 ---
 
@@ -334,19 +340,24 @@ CREATE TABLE node_extension (
 
 ## 회고 (Phase 종료 후 작성)
 
-> 이 섹션은 Phase 0 종료 시 채운다.
+> 구현 범위는 완료했고, 외부 바이너리 의존 검증만 남은 상태에서 기록한다.
 
 **잘 된 점**:
--
+- `uv` 기반 Python 3.12 환경, 최소 앱 셸, 테스트/문서/CI 뼈대를 Phase 0 안에서 일관되게 세팅했다.
+- SourcetrailDB v25 스키마는 원본 C++ 생성 코드를 기준으로 재구성해 핵심 테이블과 enum을 문서화했다.
+- PoC 3종 모두 실행 가능한 형태로 남겨 Phase 1 진입 전에 인덱싱, 에디터, 그래프 경로를 각각 검증했다.
 
 **어려웠던 점**:
--
+- 원본 Sourcetrail GUI 바이너리가 현재 환경에 없어 G1 수동 게이트를 즉시 닫을 수 없었다.
+- `.srctrldb`와 QScintilla 초기 부트스트랩은 문서보다 실제 동작을 기준으로 맞춰야 해서 C++ 소스와 PoC를 함께 봐야 했다.
 
 **다음 Phase로 이월된 항목**:
--
+- 원본 Sourcetrail GUI로 `poc/01_jedi_to_sqlite/artifacts/sample-minimal.srctrldb` 열람 검증
+- GitHub Actions Windows 런 첫 실행 확인 및 DoD 체크 업데이트
 
 **타임라인 대비 실적**:
-- 계획: 2주 / 실제: ?주
+- 계획: 2주 / 실제: 2주 구현 완료, 외부 검증 2건 대기
 
 **배운 점 (Phase 1에 반영)**:
--
+- 호환성 이슈는 문서 추정이 아니라 실제 생성 SQL과 작은 재현 fixture로 먼저 고정하는 편이 빠르다.
+- PoC 산출물은 스크린샷과 리포트까지 함께 남겨야 이후 회귀 확인이 쉬워진다.
