@@ -313,7 +313,7 @@ CREATE TABLE node_extension (
 ## Phase 0 DoD (Definition of Done)
 
 - [x] `uv run python -m sourcetrail_remake` 으로 빈 `QMainWindow` 기동
-- [ ] Windows CI가 **lint + type-check + empty tests** 모두 green
+- [x] Windows CI가 **lint + type-check + empty tests** 모두 green
 - [x] `docs/db-schema.md`에 **모든 테이블 + enum 100% 문서화**
 - [ ] PoC 3종 모두 스크린샷과 함께 수락 기준 통과
 - [x] `phase-1-wbs-detail.md` 작성 완료 (주 단위 → 일 단위 분해)
@@ -325,7 +325,7 @@ CREATE TABLE node_extension (
 - 원본 Sourcetrail Windows GUI 확인 기준 버전은 `Version 2021.4.19 - 64bit`이며, About 대화상자 기준 `Database Version 25`를 사용한다.
 - 사용자 수동 검증으로 위 GUI에서 `poc/01_jedi_to_sqlite/artifacts/sample-minimal.srctrlprj` 열람에 성공했고, 대응 DB `sample-minimal.srctrldb`가 overview에 로드되는 것을 확인했다.
 - 수동 검증 화면 기준으로 `41 symbols`, `40 references`, `0 errors (0 fatal)`이 표시되어 원본 GUI 호환 게이트(G1)는 통과로 기록한다.
-- GitHub Actions의 첫 Windows 실행 이력은 아직 없어 CI "green" 항목은 원격 파이프라인 실행 후 최종 체크가 필요하다.
+- GitHub Actions PR `namu052/Sourcetrail#1`에서 commit `d9fd58f1` 기준 `ci` run #3, `harness-gate` run #3가 모두 green으로 완료됐다.
 - 다만 Smart Search 기반 심볼 drill-down (`SessionManager`, `Session`, `cleanup_expired`, `missing_cleanup_handler`)은 별도 후속 검증으로 남긴다.
 
 ---
@@ -342,7 +342,7 @@ CREATE TABLE node_extension (
 
 ## 회고 (Phase 종료 후 작성)
 
-> 구현 범위는 완료했고, 외부 바이너리 의존 검증만 남은 상태에서 기록한다.
+> 핵심 구현과 원격 Windows CI, 원본 GUI 열람 검증까지 마쳤고, PoC acceptance 증적 보강만 남은 상태에서 기록한다.
 
 **잘 된 점**:
 - `uv` 기반 Python 3.12 환경, 최소 앱 셸, 테스트/문서/CI 뼈대를 Phase 0 안에서 일관되게 세팅했다.
@@ -354,11 +354,11 @@ CREATE TABLE node_extension (
 - `.srctrldb`와 QScintilla 초기 부트스트랩은 문서보다 실제 동작을 기준으로 맞춰야 해서 C++ 소스와 PoC를 함께 봐야 했다.
 
 **다음 Phase로 이월된 항목**:
-- 원본 Sourcetrail GUI로 `poc/01_jedi_to_sqlite/artifacts/sample-minimal.srctrldb` 열람 검증
-- GitHub Actions Windows 런 첫 실행 확인 및 DoD 체크 업데이트
+- Smart Search 기반 심볼 drill-down (`SessionManager`, `Session`, `cleanup_expired`, `missing_cleanup_handler`) 후속 검증
+- PoC 3종 스크린샷 artifact 정리 및 acceptance evidence 보강
 
 **타임라인 대비 실적**:
-- 계획: 2주 / 실제: 2주 구현 완료, 외부 검증 2건 대기
+- 계획: 2주 / 실제: 2주 구현 완료, 후속 acceptance 증적 보강 1건 잔여
 
 **배운 점 (Phase 1에 반영)**:
 - 호환성 이슈는 문서 추정이 아니라 실제 생성 SQL과 작은 재현 fixture로 먼저 고정하는 편이 빠르다.
