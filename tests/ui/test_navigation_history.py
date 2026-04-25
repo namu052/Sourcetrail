@@ -56,7 +56,11 @@ def test_history_buttons_navigate_back_forward_and_home(qtbot) -> None:
             writer.record_edge(class_id, method_id, EdgeType.EDGE_MEMBER, file=file_id)
             writer.record_edge(method_id, function_id, EdgeType.EDGE_CALL, file=file_id)
 
-        window = create_main_window(EventBus(), reader=DatabaseReader(db_path), initial_symbol_id=class_id)
+        window = create_main_window(
+            EventBus(),
+            reader=DatabaseReader(db_path),
+            initial_symbol_id=class_id,
+        )
         qtbot.addWidget(window)
         window.show()
 

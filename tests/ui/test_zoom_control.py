@@ -10,7 +10,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QPushButton
 
 from sourcetrail_remake.core.event_bus import EventBus
-from sourcetrail_remake.core.types import EdgeType, NodeType, SourceLocation
+from sourcetrail_remake.core.types import NodeType, SourceLocation
 from sourcetrail_remake.db.reader import DatabaseReader
 from sourcetrail_remake.db.writer import DatabaseWriter
 from sourcetrail_remake.ui.main_window import create_main_window
@@ -36,7 +36,11 @@ def test_zoom_buttons_update_graph_view_scale(qtbot) -> None:
                 qualified_name="session_manager.SessionManager",
             )
 
-        window = create_main_window(EventBus(), reader=DatabaseReader(db_path), initial_symbol_id=class_id)
+        window = create_main_window(
+            EventBus(),
+            reader=DatabaseReader(db_path),
+            initial_symbol_id=class_id,
+        )
         qtbot.addWidget(window)
         window.show()
 

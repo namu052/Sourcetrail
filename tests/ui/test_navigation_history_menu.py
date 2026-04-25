@@ -55,7 +55,11 @@ def test_history_dropdown_lists_entries_and_jumps_to_selection(qtbot) -> None:
             writer.record_edge(class_id, method_id, EdgeType.EDGE_MEMBER, file=file_id)
             writer.record_edge(method_id, function_id, EdgeType.EDGE_CALL, file=file_id)
 
-        window = create_main_window(EventBus(), reader=DatabaseReader(db_path), initial_symbol_id=class_id)
+        window = create_main_window(
+            EventBus(),
+            reader=DatabaseReader(db_path),
+            initial_symbol_id=class_id,
+        )
         qtbot.addWidget(window)
         window.show()
         window.focus_symbol(method_id)

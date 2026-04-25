@@ -44,7 +44,11 @@ def test_graph_view_supports_click_and_keyboard_expand_collapse(qtbot) -> None:
             )
             writer.record_edge(class_id, method_id, EdgeType.EDGE_MEMBER, file=file_id)
 
-        window = create_main_window(EventBus(), reader=DatabaseReader(db_path), initial_symbol_id=class_id)
+        window = create_main_window(
+            EventBus(),
+            reader=DatabaseReader(db_path),
+            initial_symbol_id=class_id,
+        )
         qtbot.addWidget(window)
         window.show()
 
@@ -58,7 +62,11 @@ def test_graph_view_supports_click_and_keyboard_expand_collapse(qtbot) -> None:
         assert method_item.isVisible()
 
         click_point = view.mapFromScene(class_item.sceneBoundingRect().center())
-        qtbot.mouseClick(view.viewport(), Qt.MouseButton.LeftButton, pos=QPoint(click_point.x(), click_point.y()))
+        qtbot.mouseClick(
+            view.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=QPoint(click_point.x(), click_point.y()),
+        )
         qtbot.wait(250)
         assert not method_item.isVisible()
 

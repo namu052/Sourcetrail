@@ -48,7 +48,11 @@ def test_bookmark_star_adds_removes_and_lists_symbols(qtbot) -> None:
             )
             writer.record_edge(class_id, method_id, EdgeType.EDGE_MEMBER, file=file_id)
 
-        window = create_main_window(EventBus(), reader=DatabaseReader(db_path), initial_symbol_id=class_id)
+        window = create_main_window(
+            EventBus(),
+            reader=DatabaseReader(db_path),
+            initial_symbol_id=class_id,
+        )
         qtbot.addWidget(window)
         window.show()
 

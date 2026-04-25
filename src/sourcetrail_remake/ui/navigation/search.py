@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from rapidfuzz import fuzz, process
-
 from PyQt6.QtCore import QObject, QStringListModel, Qt, pyqtSignal
 from PyQt6.QtWidgets import QCompleter, QHBoxLayout, QLineEdit, QWidget
+from rapidfuzz import fuzz, process
 
 from sourcetrail_remake.core.types import GraphNodeRecord
 

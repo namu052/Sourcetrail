@@ -48,7 +48,11 @@ def test_fqn_search_bar_displays_current_symbol_and_resolves_exact_match(qtbot) 
             )
             writer.record_edge(class_id, method_id, EdgeType.EDGE_MEMBER, file=file_id)
 
-        window = create_main_window(EventBus(), reader=DatabaseReader(db_path), initial_symbol_id=class_id)
+        window = create_main_window(
+            EventBus(),
+            reader=DatabaseReader(db_path),
+            initial_symbol_id=class_id,
+        )
         qtbot.addWidget(window)
         window.show()
 
