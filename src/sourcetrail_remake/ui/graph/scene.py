@@ -15,9 +15,9 @@ from PyQt6.QtWidgets import (
 )
 
 from sourcetrail_remake.core.event_bus import EventBus
-from sourcetrail_remake.core.types import EdgeType, GraphEdgeRecord, GraphNeighborhood, GraphNodeRecord, NodeId, NodeType
+from sourcetrail_remake.core.types import GraphNeighborhood, GraphNodeRecord, NodeId, NodeType
 from sourcetrail_remake.db.reader import DatabaseReader
-from sourcetrail_remake.ui.graph.edges import EdgeRenderer
+from sourcetrail_remake.ui.graph.edges import BundledEdgeRecord, EdgeRenderer
 from sourcetrail_remake.ui.graph.nodes import NodeRenderer
 
 
@@ -79,7 +79,7 @@ class GraphScene(QGraphicsScene):
             item = self._add_node(node, positions[node.id], is_root=node.id == neighborhood.root_id)
             self._node_items[node.id] = item
 
-        for edge in neighborhood.edges:
+        for edge in EdgeRenderer.bundle_parallel_edges(neighborhood.edges):
             source_item = self._node_items.get(edge.source)
             target_item = self._node_items.get(edge.target)
             if source_item is None or target_item is None:
@@ -125,13 +125,13 @@ class GraphScene(QGraphicsScene):
 
     def _add_edge(
         self,
-        edge: GraphEdgeRecord,
+        edge: BundledEdgeRecord,
         source_item: QGraphicsItem,
         target_item: QGraphicsItem,
     ) -> QGraphicsPathItem:
         start = source_item.sceneBoundingRect().center()
         end = target_item.sceneBoundingRect().center()
-        item = EdgeRenderer.create_edge(start, end, edge.edge_type)
+        item = EdgeRenderer.create_edge(start, end, edge.edge_type, bundle_count=edge.bundle_count)
         self.addItem(item)
         return item
 

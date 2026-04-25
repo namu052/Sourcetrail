@@ -2,13 +2,27 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from math import atan2, cos, sin
+from typing import NewType
 
 from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QColor, QPainter, QPainterPath, QPen, QPolygonF
 from PyQt6.QtWidgets import QGraphicsPathItem
 
-from sourcetrail_remake.core.types import EdgeType
+from sourcetrail_remake.core.types import EdgeId, EdgeType, GraphEdgeRecord, NodeId
+
+BundledEdgeId = NewType("BundledEdgeId", int)
+
+
+@dataclass(slots=True, frozen=True)
+class BundledEdgeRecord:
+    id: BundledEdgeId
+    source: NodeId
+    target: NodeId
+    edge_type: EdgeType
+    bundle_count: int
+    edge_ids: tuple[EdgeId, ...]
 
 
 class RenderedEdgeItem(QGraphicsPathItem):
@@ -21,14 +35,16 @@ class RenderedEdgeItem(QGraphicsPathItem):
         edge_type: EdgeType,
         *,
         offset: float = 0.0,
+        bundle_count: int = 1,
     ) -> None:
         self.edge_type = edge_type
         self.offset = offset
+        self.bundle_count = bundle_count
         self.color, self.pen_style = _edge_style(edge_type)
         path = _build_edge_path(start, end, offset=offset)
         super().__init__(path)
         self.arrow_head = _build_arrow_head(path)
-        self.setPen(QPen(self.color, 3, self.pen_style))
+        self.setPen(QPen(self.color, 4 if bundle_count > 1 else 3, self.pen_style))
         self.setZValue(-1)
 
     def paint(
@@ -41,6 +57,16 @@ class RenderedEdgeItem(QGraphicsPathItem):
         painter.setBrush(self.color)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawPolygon(self.arrow_head)
+        if self.bundle_count > 1:
+            midpoint = self.path().pointAtPercent(0.5)
+            painter.setBrush(QColor("#ffffff"))
+            painter.setPen(QPen(self.color, 2))
+            painter.drawEllipse(midpoint, 10, 10)
+            painter.drawText(
+                midpoint.x() - 5,
+                midpoint.y() + 4,
+                str(self.bundle_count),
+            )
 
 
 class EdgeRenderer:
@@ -53,8 +79,31 @@ class EdgeRenderer:
         edge_type: EdgeType,
         *,
         offset: float = 0.0,
+        bundle_count: int = 1,
     ) -> QGraphicsPathItem:
-        return RenderedEdgeItem(start, end, edge_type, offset=offset)
+        return RenderedEdgeItem(start, end, edge_type, offset=offset, bundle_count=bundle_count)
+
+    @staticmethod
+    def bundle_parallel_edges(edges: tuple[GraphEdgeRecord, ...]) -> tuple[BundledEdgeRecord, ...]:
+        buckets: dict[tuple[int, int], list[GraphEdgeRecord]] = {}
+        for edge in edges:
+            buckets.setdefault((int(edge.source), int(edge.target)), []).append(edge)
+
+        bundled: list[BundledEdgeRecord] = []
+        for index, key in enumerate(sorted(buckets), start=1):
+            bucket = tuple(sorted(buckets[key], key=lambda edge: (int(edge.edge_type), int(edge.id))))
+            representative = max(bucket, key=lambda edge: _edge_priority(edge.edge_type))
+            bundled.append(
+                BundledEdgeRecord(
+                    id=BundledEdgeId(index),
+                    source=representative.source,
+                    target=representative.target,
+                    edge_type=representative.edge_type,
+                    bundle_count=len(bucket),
+                    edge_ids=tuple(edge.id for edge in bucket),
+                )
+            )
+        return tuple(bundled)
 
 
 def _build_edge_path(start: QPointF, end: QPointF, *, offset: float) -> QPainterPath:
@@ -93,3 +142,13 @@ def _edge_style(edge_type: EdgeType) -> tuple[QColor, Qt.PenStyle]:
     if edge_type == EdgeType.EDGE_MEMBER:
         return QColor("#64748b"), Qt.PenStyle.DashLine
     return QColor("#475569"), Qt.PenStyle.DotLine
+
+
+def _edge_priority(edge_type: EdgeType) -> int:
+    if edge_type == EdgeType.EDGE_CALL:
+        return 3
+    if edge_type == EdgeType.EDGE_USAGE:
+        return 2
+    if edge_type == EdgeType.EDGE_MEMBER:
+        return 1
+    return 0
