@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from PyQt6.QtCore import QPointF, Qt
-from PyQt6.QtGui import QBrush, QColor, QPainterPath, QPen
+from PyQt6.QtGui import QBrush, QColor, QPen
 from PyQt6.QtWidgets import (
     QGraphicsItem,
     QGraphicsPathItem,
@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
 from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.core.types import EdgeType, GraphEdgeRecord, GraphNeighborhood, GraphNodeRecord, NodeId, NodeType
 from sourcetrail_remake.db.reader import DatabaseReader
+from sourcetrail_remake.ui.graph.edges import EdgeRenderer
 from sourcetrail_remake.ui.graph.nodes import NodeRenderer
 
 
@@ -130,20 +131,7 @@ class GraphScene(QGraphicsScene):
     ) -> QGraphicsPathItem:
         start = source_item.sceneBoundingRect().center()
         end = target_item.sceneBoundingRect().center()
-        path = QPainterPath(start)
-        mid_x = (start.x() + end.x()) / 2
-        path.cubicTo(QPointF(mid_x, start.y()), QPointF(mid_x, end.y()), end)
-
-        style = Qt.PenStyle.SolidLine
-        color = QColor("#2563eb")
-        if edge.edge_type == EdgeType.EDGE_CALL:
-            color = QColor("#f97316")
-        elif edge.edge_type == EdgeType.EDGE_MEMBER:
-            style = Qt.PenStyle.DashLine
-            color = QColor("#64748b")
-
-        item = QGraphicsPathItem(path)
-        item.setPen(QPen(color, 3, style))
+        item = EdgeRenderer.create_edge(start, end, edge.edge_type)
         self.addItem(item)
         return item
 
