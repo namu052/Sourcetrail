@@ -22,8 +22,20 @@ def test_graph_layout_engine_is_deterministic() -> None:
         root_id=NodeId(1),
         depth=2,
         nodes=(
-            GraphNodeRecord(NodeId(1), "pkg.SessionManager", "SessionManager", NodeType.NODE_CLASS, 2),
-            GraphNodeRecord(NodeId(2), "pkg.cleanup_expired", "cleanup_expired", NodeType.NODE_METHOD, 0),
+            GraphNodeRecord(
+                NodeId(1),
+                "pkg.SessionManager",
+                "SessionManager",
+                NodeType.NODE_CLASS,
+                2,
+            ),
+            GraphNodeRecord(
+                NodeId(2),
+                "pkg.cleanup_expired",
+                "cleanup_expired",
+                NodeType.NODE_METHOD,
+                0,
+            ),
             GraphNodeRecord(NodeId(3), "pkg.notify", "notify", NodeType.NODE_FUNCTION, 0),
         ),
         edges=(

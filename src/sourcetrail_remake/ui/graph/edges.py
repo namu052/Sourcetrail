@@ -91,7 +91,12 @@ class EdgeRenderer:
 
         bundled: list[BundledEdgeRecord] = []
         for index, key in enumerate(sorted(buckets), start=1):
-            bucket = tuple(sorted(buckets[key], key=lambda edge: (int(edge.edge_type), int(edge.id))))
+            bucket = tuple(
+                sorted(
+                    buckets[key],
+                    key=lambda edge: (int(edge.edge_type), int(edge.id)),
+                )
+            )
             representative = max(bucket, key=lambda edge: _edge_priority(edge.edge_type))
             bundled.append(
                 BundledEdgeRecord(

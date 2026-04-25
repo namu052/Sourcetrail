@@ -6,8 +6,8 @@ import pytest
 from PyQt6.QtWidgets import QDockWidget, QStatusBar
 
 from sourcetrail_remake.core.event_bus import EventBus
-from sourcetrail_remake.ui.main_window import create_main_window
 from sourcetrail_remake.ui.graph.view import GraphView
+from sourcetrail_remake.ui.main_window import create_main_window
 
 
 @pytest.mark.ui

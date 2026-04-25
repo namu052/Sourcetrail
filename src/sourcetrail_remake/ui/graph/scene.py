@@ -2,18 +2,27 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import QEasingCurve, QPointF, QParallelAnimationGroup, QPropertyAnimation
-from PyQt6.QtGui import QBrush, QColor, QPen
+from PyQt6.QtCore import (
+    QEasingCurve,
+    QParallelAnimationGroup,
+    QPointF,
+    QPropertyAnimation,
+)
+from PyQt6.QtGui import QBrush, QColor
 from PyQt6.QtWidgets import (
     QGraphicsItem,
     QGraphicsObject,
     QGraphicsPathItem,
-    QGraphicsRectItem,
     QGraphicsScene,
 )
 
 from sourcetrail_remake.core.event_bus import EventBus
-from sourcetrail_remake.core.types import GraphNeighborhood, GraphNodeRecord, NodeId, NodeType
+from sourcetrail_remake.core.types import (
+    GraphNeighborhood,
+    GraphNodeRecord,
+    NodeId,
+    NodeType,
+)
 from sourcetrail_remake.db.reader import DatabaseReader
 from sourcetrail_remake.ui.graph.edges import BundledEdgeRecord, EdgeRenderer
 from sourcetrail_remake.ui.graph.layout import GraphLayoutEngine
@@ -53,6 +62,9 @@ class GraphScene(QGraphicsScene):
             self._show_placeholder("Graph database is not loaded yet.")
             return
         neighborhood = self.reader.load_graph(symbol_id, depth)
+        self.render_neighborhood(neighborhood)
+
+    def render_neighborhood(self, neighborhood: GraphNeighborhood) -> None:
         self._render(neighborhood)
 
     def on_node_clicked(self, node_id: NodeId) -> None:
@@ -82,7 +94,12 @@ class GraphScene(QGraphicsScene):
         self._collapsed_nodes.clear()
         self._selected_node_id = neighborhood.root_id
 
-        ordered_nodes = tuple(sorted(neighborhood.nodes, key=lambda node: (node.member_count == 0, int(node.id))))
+        ordered_nodes = tuple(
+            sorted(
+                neighborhood.nodes,
+                key=lambda node: (node.member_count == 0, int(node.id)),
+            )
+        )
         positions = self.layout_engine.compute_layout(neighborhood)
         self._node_positions = positions
         node_map = {node.id: node for node in neighborhood.nodes}
@@ -110,7 +127,13 @@ class GraphScene(QGraphicsScene):
         if node_map and self.event_bus is not None:
             self.event_bus.layout_changed.emit("sugiyama-force")
 
-    def _add_node(self, node: GraphNodeRecord, position: QPointF, *, is_root: bool) -> QGraphicsObject:
+    def _add_node(
+        self,
+        node: GraphNodeRecord,
+        position: QPointF,
+        *,
+        is_root: bool,
+    ) -> QGraphicsObject:
         if node.is_unsolved:
             item = NodeRenderer.create_unsolved()
             assert isinstance(item, QGraphicsObject)
@@ -177,7 +200,13 @@ class GraphScene(QGraphicsScene):
     def get_node_item(self, node_id: NodeId) -> QGraphicsObject | None:
         return self._node_items.get(node_id)
 
-    def _animate_child_nodes(self, parent_id: NodeId, child_ids: list[NodeId], *, expand: bool) -> None:
+    def _animate_child_nodes(
+        self,
+        parent_id: NodeId,
+        child_ids: list[NodeId],
+        *,
+        expand: bool,
+    ) -> None:
         parent_item = self._node_items.get(parent_id)
         if parent_item is None:
             return
@@ -237,7 +266,9 @@ class GraphScene(QGraphicsScene):
 
     def _discard_animation(self, animation: QParallelAnimationGroup) -> None:
         self._active_animations = [
-            active_animation for active_animation in self._active_animations if active_animation is not animation
+            active_animation
+            for active_animation in self._active_animations
+            if active_animation is not animation
         ]
 
     def _sync_edge_visibility(self, child_ids: list[NodeId], *, visible: bool) -> None:

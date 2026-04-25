@@ -56,13 +56,11 @@ class DatabaseReader:
     def list_unsolved(self) -> list[tuple[NodeId, str]]:
         with sqlite3.connect(self.db_path) as connection:
             rows = connection.execute(
-                (
-                    "SELECT node.id, node.serialized_name "
-                    "FROM node "
-                    "INNER JOIN node_extension ON node_extension.node_id = node.id "
-                    "WHERE node_extension.kind = 'unsolved' "
-                    "ORDER BY node.id;"
-                )
+                "SELECT node.id, node.serialized_name "
+                "FROM node "
+                "INNER JOIN node_extension ON node_extension.node_id = node.id "
+                "WHERE node_extension.kind = 'unsolved' "
+                "ORDER BY node.id;"
             ).fetchall()
         return [(NodeId(int(row[0])), str(row[1])) for row in rows]
 
@@ -73,7 +71,8 @@ class DatabaseReader:
                     "SELECT source_location.start_line, source_location.start_column, "
                     "source_location.end_line, source_location.end_column, source_location.type "
                     "FROM occurrence "
-                    "INNER JOIN source_location ON source_location.id = occurrence.source_location_id "
+                    "INNER JOIN source_location "
+                    "ON source_location.id = occurrence.source_location_id "
                     "WHERE occurrence.element_id = ? "
                     "ORDER BY source_location.id;"
                 ),
