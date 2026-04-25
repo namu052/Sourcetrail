@@ -105,33 +105,15 @@ class GraphScene(QGraphicsScene):
             item.setPos(position)
             self.addItem(item)
         else:
-            item = QGraphicsRectItem(0, 0, 210, 96)
-            item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
-            item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True)
+            item = NodeRenderer.create_member(node.display_name, node.node_type)
             item.setPos(position)
-            item.setPen(QPen(QColor("#1f2937"), 2))
-            item.setBrush(QBrush(QColor("#ffffff")))
             self.addItem(item)
-
-            title = QGraphicsSimpleTextItem(node.display_name, item)
-            title.setBrush(QBrush(QColor("#111827")))
-            title.setPos(12, 10)
-
-            subtitle = QGraphicsSimpleTextItem(node.serialized_name, item)
-            subtitle.setBrush(QBrush(QColor("#6b7280")))
-            subtitle.setPos(12, 34)
-
-            badge_text = (
-                f"members {node.member_count}" if node.member_count else node.node_type.name.removeprefix("NODE_")
-            )
-            badge = QGraphicsSimpleTextItem(badge_text, item)
-            badge.setBrush(QBrush(QColor("#2563eb" if not node.is_unsolved else "#9a3412")))
-            badge.setPos(12, 64)
 
         item.setData(0, int(node.id))
         item.setData(1, int(node.node_type))
         item.setData(2, node.is_unsolved)
         item.setData(3, is_root)
+        item.setToolTip(node.serialized_name)
         return item
 
     def _add_edge(
