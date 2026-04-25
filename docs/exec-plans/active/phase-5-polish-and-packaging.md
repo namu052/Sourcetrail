@@ -1,3 +1,9 @@
+---
+title: Phase 5 Polish and Packaging
+status: Active
+last_updated: 2026-04-25
+---
+
 # Phase 5 — 완성도 & 패키징
 
 | 메타 | 값 |

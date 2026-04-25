@@ -1,2 +1,1 @@
 """Graph view package."""
-

@@ -1,3 +1,9 @@
+---
+title: Phase 6 Testing and Docs
+status: Active
+last_updated: 2026-04-25
+---
+
 # Phase 6 — 테스트 & 문서 (전 기간 지속)
 
 | 메타 | 값 |

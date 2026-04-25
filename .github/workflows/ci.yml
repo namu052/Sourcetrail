@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: sync dependencies
+        shell: bash
+        run: uv sync --all-extras
+
+      - name: lint
+        shell: bash
+        run: bash scripts/lint.sh
+
+      - name: type-check
+        shell: bash
+        run: bash scripts/type-check.sh
+
+      - name: tests
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: bash scripts/run-tests.sh
+

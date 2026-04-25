@@ -1,3 +1,9 @@
+---
+title: Phase 2 Source Insight Panels
+status: Active
+last_updated: 2026-04-25
+---
+
 # Phase 2 — Source Insight 핵심 패널 (MVP 종료점)
 
 | 메타 | 값 |

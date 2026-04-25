@@ -1,3 +1,9 @@
+---
+title: Phase 1 MVP Core
+status: Active
+last_updated: 2026-04-25
+---
+
 # Phase 1 — MVP Core: 인덱서 + 그래프 뷰
 
 | 메타 | 값 |

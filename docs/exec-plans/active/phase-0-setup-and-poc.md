@@ -1,3 +1,9 @@
+---
+title: Phase 0 Setup and PoC
+status: Active
+last_updated: 2026-04-25
+---
+
 # Phase 0 — 프로젝트 셋업 & 기술 PoC
 
 | 메타 | 값 |

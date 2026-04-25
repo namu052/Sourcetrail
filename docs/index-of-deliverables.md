@@ -52,6 +52,7 @@ last_updated: 2026-04-25
 | `docs/plan/phase-4-python-specific.md` | Phase 4 (W23~28) | ✅ | 사람 |
 | `docs/plan/phase-5-packaging.md` | Phase 5 (W29~31) | ✅ | 사람 |
 | `docs/plan/phase-6-testing-docs.md` | Phase 6 (지속) | ✅ | 사람 |
+| `docs/plan/phase-1-wbs-detail.md` | Phase 1 일 단위 WBS | ✅ | 공용 |
 
 ## 공용 코어 — 기록 시스템
 

@@ -1,2 +1,1 @@
 """Framework plugin package."""
-

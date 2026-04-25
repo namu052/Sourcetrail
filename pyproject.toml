@@ -19,6 +19,11 @@ dependencies = [
   "parso>=0.8.4",
   "rope>=1.13",
   "rapidfuzz>=3.9",
+  "PyYAML>=6",
+  "nbformat>=5.10",
+  "watchdog>=4",
+  "tree-sitter>=0.23",
+  "tree-sitter-python>=0.23",
 ]
 
 [project.optional-dependencies]
@@ -28,10 +33,15 @@ dev = [
   "pytest-cov>=5",
   "ruff>=0.6",
   "mypy>=1.11",
+  "pre-commit>=3.8",
+  "sphinx>=7",
+  "sphinx-rtd-theme>=2",
 ]
 
 [project.scripts]
 srm = "sourcetrail_remake.__main__:main"
+srm-index = "sourcetrail_remake.cli.index:main"
+srm-gui = "sourcetrail_remake.cli.gui:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sourcetrail_remake"]
@@ -55,4 +65,12 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+qt_api = "pyqt6"
 addopts = "--strict-markers --cov=sourcetrail_remake --cov-report=term-missing"
+markers = [
+  "unit: fast unit tests",
+  "integration: integration tests",
+  "ui: Qt or UI tests",
+  "compatibility: SourcetrailDB compatibility tests",
+  "performance: performance and benchmark-oriented tests",
+]

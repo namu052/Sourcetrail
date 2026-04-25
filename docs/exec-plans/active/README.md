@@ -1,3 +1,9 @@
+---
+title: Execution Plans Index
+status: Active
+last_updated: 2026-04-25
+---
+
 # Sourcetrail_Remake — 실행 계획 (Execution Plans)
 
 > Sourcetrail 오픈소스를 기반으로 Source Insight 스타일 UX를 결합한 **Python 전용 코드 분석 데스크톱 도구**의 구현 계획입니다.

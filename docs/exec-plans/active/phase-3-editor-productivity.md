@@ -1,3 +1,9 @@
+---
+title: Phase 3 Editor Productivity
+status: Active
+last_updated: 2026-04-25
+---
+
 # Phase 3 — 에디터 기능 강화
 
 | 메타 | 값 |

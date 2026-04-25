@@ -1,3 +1,9 @@
+---
+title: Phase 4 Python Specialization
+status: Active
+last_updated: 2026-04-25
+---
+
 # Phase 4 — Python 특화 기능
 
 | 메타 | 값 |
