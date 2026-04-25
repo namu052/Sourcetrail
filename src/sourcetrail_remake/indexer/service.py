@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import builtins
+import logging
 from collections import defaultdict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
+
+from PyQt6.QtCore import QThread, pyqtSignal
 
 from sourcetrail_remake.core.types import (
     EdgeType,
@@ -25,6 +28,8 @@ from sourcetrail_remake.indexer.jedi_resolver import JediResolver
 from sourcetrail_remake.indexer.mappings import classify_edge_type, map_name_type
 from sourcetrail_remake.indexer.parso_walker import ParsoWalker
 from sourcetrail_remake.indexer.unsolved import UnsolvedSymbolTracker
+
+logger = logging.getLogger(__name__)
 
 IGNORED_DIRECTORIES = {
     ".git",
@@ -82,6 +87,29 @@ class _ScopeLookup:
             if symbol.contains(line=line, column=column):
                 return self._symbol_nodes[symbol.qualified_name]
         return self._file_node_id
+
+
+class IndexingWorker(QThread):
+    """Run indexing in a background QThread for CLI and UI callers."""
+
+    progress_changed = pyqtSignal(int, int)
+    completed = pyqtSignal(object)
+    failed = pyqtSignal(str)
+
+    def __init__(self, service: IndexerService, db_path: Path):
+        super().__init__()
+        self.service = service
+        self.db_path = Path(db_path).resolve()
+
+    def run(self) -> None:
+        try:
+            with DatabaseWriter(self.db_path) as writer:
+                result = self.service.index(writer, self.progress_changed.emit)
+        except Exception as exc:
+            logger.exception("Indexing failed for %s", self.db_path)
+            self.failed.emit(str(exc))
+            return
+        self.completed.emit(result)
 
 
 class IndexerService:
