@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QLabel,
     QDockWidget,
+    QHBoxLayout,
     QMainWindow,
     QTextEdit,
     QVBoxLayout,
@@ -13,24 +14,37 @@ from PyQt6.QtWidgets import (
 )
 
 from sourcetrail_remake.core.config import DEFAULT_CONFIG
+from sourcetrail_remake.core.types import GraphNodeRecord, NodeId
 from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.db.reader import DatabaseReader
 from sourcetrail_remake.ui.graph.scene import GraphScene
 from sourcetrail_remake.ui.graph.view import GraphView
+from sourcetrail_remake.ui.navigation.tabs import SymbolTabBar
 
 
 class MainWindow(QMainWindow):
     """Application shell with the dock layout required for the graph workflow."""
 
-    def __init__(self, event_bus: EventBus, *, reader: DatabaseReader | None = None):
+    def __init__(
+        self,
+        event_bus: EventBus,
+        *,
+        reader: DatabaseReader | None = None,
+        initial_symbol_id: NodeId | None = None,
+    ):
         super().__init__()
         self.event_bus = event_bus
         self.reader = reader
+        self.initial_symbol_id = initial_symbol_id
+        self.current_symbol_id: NodeId | None = None
         self.graph_scene = GraphScene(reader=reader, event_bus=event_bus)
         self.graph_view = GraphView(self.graph_scene)
         self.setWindowTitle(DEFAULT_CONFIG.main_window_title)
         self.resize(1440, 900)
         self._build_shell()
+        self._connect_signals()
+        if self.reader is not None and self.initial_symbol_id is not None:
+            self.focus_symbol(self.initial_symbol_id, record_history=False)
 
     def _build_shell(self) -> None:
         self.setDockNestingEnabled(True)
@@ -40,6 +54,8 @@ class MainWindow(QMainWindow):
         central.setObjectName("graph-central-shell")
         central_layout = QVBoxLayout(central)
         central_layout.setContentsMargins(12, 12, 12, 12)
+        central_layout.setSpacing(10)
+        central_layout.addWidget(self._create_navigation_strip())
         central_layout.addWidget(self.graph_view)
         self.setCentralWidget(central)
 
@@ -49,17 +65,14 @@ class MainWindow(QMainWindow):
             object_name="graph-overview-dock",
             widget=self._create_label_panel(
                 "Overview",
-                "The graph scene, depth control, and legend attach here in Week 5-6.",
+                "Tabs, search, depth, zoom, and bookmark controls attach incrementally in Week 7-8.",
             ),
         )
         self._add_dock(
             title="Selection",
             area=Qt.DockWidgetArea.RightDockWidgetArea,
             object_name="graph-selection-dock",
-            widget=self._create_label_panel(
-                "Selection",
-                "Selected symbol details and actions will appear here.",
-            ),
+            widget=self._create_selection_panel(),
         )
         self._add_dock(
             title="Graph Log",
@@ -71,6 +84,10 @@ class MainWindow(QMainWindow):
         status_bar = self.statusBar()
         assert status_bar is not None
         status_bar.showMessage("Ready")
+
+    def _connect_signals(self) -> None:
+        self.event_bus.symbol_selected.connect(self._on_symbol_selected)
+        self.symbol_tabs.symbol_requested.connect(self._focus_symbol_from_tab)
 
     def _add_dock(
         self,
@@ -107,6 +124,43 @@ class MainWindow(QMainWindow):
         layout.addStretch(1)
         return panel
 
+    def _create_navigation_strip(self) -> QWidget:
+        strip = QWidget(self)
+        strip.setObjectName("graph-navigation-strip")
+        layout = QHBoxLayout(strip)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(10)
+
+        navigation_label = QLabel("Symbols", strip)
+        navigation_label.setObjectName("graph-navigation-label")
+        self.symbol_tabs = SymbolTabBar(strip)
+
+        layout.addWidget(navigation_label)
+        layout.addWidget(self.symbol_tabs, stretch=1)
+        return strip
+
+    def _create_selection_panel(self) -> QWidget:
+        panel = QWidget(self)
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(12, 12, 12, 12)
+
+        heading_label = QLabel("Selection", panel)
+        heading_label.setObjectName("selection-heading-label")
+        self.selection_name_label = QLabel("No symbol selected", panel)
+        self.selection_name_label.setObjectName("selection-name-label")
+        self.selection_type_label = QLabel("Type: —", panel)
+        self.selection_type_label.setObjectName("selection-type-label")
+        self.selection_fqn_label = QLabel("Qualified name: —", panel)
+        self.selection_fqn_label.setObjectName("selection-fqn-label")
+        self.selection_fqn_label.setWordWrap(True)
+
+        layout.addWidget(heading_label)
+        layout.addWidget(self.selection_name_label)
+        layout.addWidget(self.selection_type_label)
+        layout.addWidget(self.selection_fqn_label)
+        layout.addStretch(1)
+        return panel
+
     def _create_log_panel(self) -> QWidget:
         log_widget = QTextEdit(self)
         log_widget.setObjectName("graph-log-text")
@@ -117,7 +171,49 @@ class MainWindow(QMainWindow):
         )
         return log_widget
 
+    def focus_symbol(self, node_id: NodeId, *, record_history: bool = True) -> None:
+        del record_history
+        if self.reader is None:
+            return
+        symbol = self.reader.get_symbol(node_id)
+        if symbol is None:
+            return
+        self.current_symbol_id = node_id
+        self.graph_view.focus_symbol(node_id, depth=1)
+        self.symbol_tabs.open_symbol(symbol)
+        self._update_selection_panel(symbol)
 
-def create_main_window(event_bus: EventBus) -> MainWindow:
+        status_bar = self.statusBar()
+        assert status_bar is not None
+        status_bar.showMessage(f"Focused {symbol.serialized_name}")
+
+    def _focus_symbol_from_tab(self, node_id: NodeId) -> None:
+        if self.current_symbol_id == node_id:
+            return
+        self.focus_symbol(node_id, record_history=False)
+
+    def _on_symbol_selected(self, node_id: object) -> None:
+        if not isinstance(node_id, int):
+            node_id = int(node_id)
+        self.focus_symbol(NodeId(node_id))
+
+    def _update_selection_panel(self, symbol: GraphNodeRecord) -> None:
+        self.selection_name_label.setText(symbol.display_name)
+        self.selection_type_label.setText(
+            f"Type: {symbol.node_type.name.removeprefix('NODE_').replace('_', ' ').title()}"
+        )
+        self.selection_fqn_label.setText(f"Qualified name: {symbol.serialized_name}")
+
+
+def create_main_window(
+    event_bus: EventBus,
+    *,
+    reader: DatabaseReader | None = None,
+    initial_symbol_id: NodeId | None = None,
+) -> MainWindow:
     """Construct the default main window."""
-    return MainWindow(event_bus)
+    return MainWindow(
+        event_bus,
+        reader=reader,
+        initial_symbol_id=initial_symbol_id,
+    )

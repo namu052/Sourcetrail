@@ -53,6 +53,11 @@ class DatabaseReader:
             ).fetchone()
         return None if row is None else NodeId(int(row[0]))
 
+    def get_symbol(self, symbol_id: NodeId) -> GraphNodeRecord | None:
+        with sqlite3.connect(self.db_path) as connection:
+            nodes = self._load_nodes(connection, {int(symbol_id)})
+        return nodes[0] if nodes else None
+
     def list_unsolved(self) -> list[tuple[NodeId, str]]:
         with sqlite3.connect(self.db_path) as connection:
             rows = connection.execute(
