@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from PyQt6.QtCore import QObject, pyqtSignal
-from PyQt6.QtWidgets import QHBoxLayout, QToolButton, QWidget
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QHBoxLayout, QMenu, QToolButton, QWidget
+
+from sourcetrail_remake.core.types import NodeId
 
 
 class HistoryNavigator(QWidget):
@@ -12,6 +15,7 @@ class HistoryNavigator(QWidget):
     back_requested = pyqtSignal()
     forward_requested = pyqtSignal()
     home_requested = pyqtSignal()
+    history_requested = pyqtSignal(object)
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -27,6 +31,14 @@ class HistoryNavigator(QWidget):
         self.back_button.setEnabled(False)
         self.back_button.clicked.connect(self.back_requested.emit)
 
+        self.history_button = QToolButton(self)
+        self.history_button.setObjectName("history-menu-button")
+        self.history_button.setText("History")
+        self.history_button.setEnabled(False)
+        self.history_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.history_menu = QMenu(self.history_button)
+        self.history_button.setMenu(self.history_menu)
+
         self.forward_button = QToolButton(self)
         self.forward_button.setObjectName("history-forward-button")
         self.forward_button.setText("Forward")
@@ -40,6 +52,7 @@ class HistoryNavigator(QWidget):
         self.home_button.clicked.connect(self.home_requested.emit)
 
         layout.addWidget(self.back_button)
+        layout.addWidget(self.history_button)
         layout.addWidget(self.forward_button)
         layout.addWidget(self.home_button)
 
@@ -53,3 +66,21 @@ class HistoryNavigator(QWidget):
         self.back_button.setEnabled(can_go_back)
         self.forward_button.setEnabled(can_go_forward)
         self.home_button.setEnabled(has_home)
+
+    def set_entries(
+        self,
+        entries: list[tuple[NodeId, str]],
+        *,
+        current_index: int,
+    ) -> None:
+        self.history_menu.clear()
+        self.history_button.setEnabled(bool(entries))
+
+        for index, (node_id, label) in enumerate(entries):
+            action = QAction(label, self.history_menu)
+            action.setCheckable(True)
+            action.setChecked(index == current_index)
+            action.triggered.connect(
+                lambda checked=False, selected=node_id: self.history_requested.emit(selected)
+            )
+            self.history_menu.addAction(action)

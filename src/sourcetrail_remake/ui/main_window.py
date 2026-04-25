@@ -95,6 +95,7 @@ class MainWindow(QMainWindow):
         self.history_navigator.back_requested.connect(self.navigate_back)
         self.history_navigator.forward_requested.connect(self.navigate_forward)
         self.history_navigator.home_requested.connect(self.navigate_home)
+        self.history_navigator.history_requested.connect(self.navigate_to_history_entry)
 
     def _add_dock(
         self,
@@ -234,6 +235,12 @@ class MainWindow(QMainWindow):
             return
         self.focus_symbol(self.home_symbol_id, record_history=False)
 
+    def navigate_to_history_entry(self, node_id: NodeId) -> None:
+        if node_id not in self.history_entries:
+            return
+        self.history_index = self.history_entries.index(node_id)
+        self.focus_symbol(node_id, record_history=False)
+
     def _push_history(self, node_id: NodeId) -> None:
         if self.history_index >= 0 and self.history_entries[self.history_index] == node_id:
             return
@@ -248,6 +255,21 @@ class MainWindow(QMainWindow):
             can_go_forward=0 <= self.history_index < len(self.history_entries) - 1,
             has_home=self.home_symbol_id is not None,
         )
+        self.history_navigator.set_entries(
+            [
+                (entry, self._history_label(entry))
+                for entry in self.history_entries
+            ],
+            current_index=self.history_index,
+        )
+
+    def _history_label(self, node_id: NodeId) -> str:
+        if self.reader is None:
+            return str(int(node_id))
+        symbol = self.reader.get_symbol(node_id)
+        if symbol is None:
+            return str(int(node_id))
+        return symbol.serialized_name
 
 
 def create_main_window(
