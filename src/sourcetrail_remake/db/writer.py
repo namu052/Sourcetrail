@@ -118,7 +118,7 @@ class DatabaseWriter:
     ) -> NodeId:
         serialized_name = qualified_name or name
         file_key = int(file) if file is not None else 0
-        location_key = None if location is None else hash(
+        location_key = None if location is None else (
             (
                 location.start_line,
                 location.start_column,
@@ -287,9 +287,11 @@ class DatabaseWriter:
             edges=count("edge"),
             locations=count("source_location"),
             occurrences=count("occurrence"),
-            unsolved=self.connection.execute(
-                "SELECT COUNT(*) FROM node_extension WHERE kind = 'unsolved';"
-            ).fetchone()[0],
+            unsolved=int(
+                self.connection.execute(
+                    "SELECT COUNT(*) FROM node_extension WHERE kind = 'unsolved';"
+                ).fetchone()[0]
+            ),
         )
 
     def commit(self) -> None:
