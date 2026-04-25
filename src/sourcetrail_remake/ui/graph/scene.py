@@ -100,7 +100,13 @@ class GraphScene(QGraphicsScene):
         return positions
 
     def _add_node(self, node: GraphNodeRecord, position: QPointF, *, is_root: bool) -> QGraphicsItem:
-        if node.node_type == NodeType.NODE_CLASS:
+        if node.is_unsolved:
+            item = NodeRenderer.create_unsolved()
+            if hasattr(item, "set_label"):
+                item.set_label(node.display_name)
+            item.setPos(position)
+            self.addItem(item)
+        elif node.node_type == NodeType.NODE_CLASS:
             item = NodeRenderer.create_class_container(node.display_name, node.member_count)
             item.setPos(position)
             self.addItem(item)

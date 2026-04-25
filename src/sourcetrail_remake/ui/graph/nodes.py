@@ -119,6 +119,58 @@ class MemberNodeItem(QGraphicsObject):
         )
 
 
+class UnsolvedNodeItem(QGraphicsObject):
+    """Pattern-filled placeholder for unresolved symbols."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.label = "Unsolved"
+        self.pattern_style = Qt.BrushStyle.DiagCrossPattern
+        self._selected = False
+        self._bounds = QRectF(0, 0, 220, 84)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True)
+
+    def boundingRect(self) -> QRectF:
+        return self._bounds
+
+    def set_label(self, label: str) -> None:
+        self.label = label
+        self.update()
+
+    def set_selected_state(self, selected: bool) -> None:
+        self._selected = selected
+        self.update()
+
+    def paint(
+        self,
+        painter: QPainter,
+        option: object,
+        widget: object | None = None,
+    ) -> None:
+        del option, widget
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+        fill_color = QColor("#f5ead9")
+        border = QColor("#c2410c") if self._selected else QColor("#9a3412")
+        painter.setBrush(QBrush(fill_color, self.pattern_style))
+        painter.setPen(QPen(border, 3 if self._selected else 2))
+        painter.drawRoundedRect(self._bounds, 16, 16)
+
+        painter.setPen(QColor("#7c2d12"))
+        painter.drawText(
+            QRectF(16, 16, self._bounds.width() - 32, 24),
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+            self.label,
+        )
+        painter.setPen(QColor("#9a3412"))
+        painter.drawText(
+            QRectF(16, 44, self._bounds.width() - 32, 20),
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+            "Unresolved Symbol",
+        )
+
+
 def _accent_for_type(node_type: NodeType) -> QColor:
     if node_type == NodeType.NODE_METHOD:
         return QColor("#f97316")
@@ -139,3 +191,7 @@ class NodeRenderer:
     @staticmethod
     def create_member(name: str, node_type: NodeType) -> QGraphicsItem:
         return MemberNodeItem(name, node_type)
+
+    @staticmethod
+    def create_unsolved() -> QGraphicsItem:
+        return UnsolvedNodeItem()
