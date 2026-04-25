@@ -104,7 +104,8 @@ def main() -> int:
 
     if not DATABASE_FILE.exists():
         raise SystemExit(
-            "Missing sample-minimal.srctrldb. Run without --skip-db-regen or generate the PoC first."
+            "Missing sample-minimal.srctrldb. "
+            "Run without --skip-db-regen or generate the PoC first."
         )
 
     align_project_timestamp()
@@ -121,10 +122,7 @@ def main() -> int:
         launch_sourcetrail(args.sourcetrail_exe)
         print("launch=started")
     else:
-        print(
-            "launch_command="
-            f"\"{args.sourcetrail_exe}\" --project-file \"{PROJECT_FILE}\""
-        )
+        print(f'launch_command="{args.sourcetrail_exe}" --project-file "{PROJECT_FILE}"')
 
     return 0
 
