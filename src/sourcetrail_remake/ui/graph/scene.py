@@ -15,8 +15,9 @@ from PyQt6.QtWidgets import (
 )
 
 from sourcetrail_remake.core.event_bus import EventBus
-from sourcetrail_remake.core.types import EdgeType, GraphEdgeRecord, GraphNeighborhood, GraphNodeRecord, NodeId
+from sourcetrail_remake.core.types import EdgeType, GraphEdgeRecord, GraphNeighborhood, GraphNodeRecord, NodeId, NodeType
 from sourcetrail_remake.db.reader import DatabaseReader
+from sourcetrail_remake.ui.graph.nodes import NodeRenderer
 
 
 class GraphScene(QGraphicsScene):
@@ -31,7 +32,7 @@ class GraphScene(QGraphicsScene):
         super().__init__()
         self.reader = reader
         self.event_bus = event_bus
-        self._node_items: dict[NodeId, QGraphicsRectItem] = {}
+        self._node_items: dict[NodeId, QGraphicsItem] = {}
         self._edge_items: dict[int, QGraphicsPathItem] = {}
         self._selected_node_id: NodeId | None = None
         self.setBackgroundBrush(QBrush(QColor("#fbfbfd")))
@@ -98,39 +99,46 @@ class GraphScene(QGraphicsScene):
             positions[node.id] = QPointF(60 + column * 260, 60 + row * 180)
         return positions
 
-    def _add_node(self, node: GraphNodeRecord, position: QPointF, *, is_root: bool) -> QGraphicsRectItem:
-        item = QGraphicsRectItem(0, 0, 210, 96)
-        item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
-        item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True)
+    def _add_node(self, node: GraphNodeRecord, position: QPointF, *, is_root: bool) -> QGraphicsItem:
+        if node.node_type == NodeType.NODE_CLASS:
+            item = NodeRenderer.create_class_container(node.display_name, node.member_count)
+            item.setPos(position)
+            self.addItem(item)
+        else:
+            item = QGraphicsRectItem(0, 0, 210, 96)
+            item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
+            item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True)
+            item.setPos(position)
+            item.setPen(QPen(QColor("#1f2937"), 2))
+            item.setBrush(QBrush(QColor("#ffffff")))
+            self.addItem(item)
+
+            title = QGraphicsSimpleTextItem(node.display_name, item)
+            title.setBrush(QBrush(QColor("#111827")))
+            title.setPos(12, 10)
+
+            subtitle = QGraphicsSimpleTextItem(node.serialized_name, item)
+            subtitle.setBrush(QBrush(QColor("#6b7280")))
+            subtitle.setPos(12, 34)
+
+            badge_text = (
+                f"members {node.member_count}" if node.member_count else node.node_type.name.removeprefix("NODE_")
+            )
+            badge = QGraphicsSimpleTextItem(badge_text, item)
+            badge.setBrush(QBrush(QColor("#2563eb" if not node.is_unsolved else "#9a3412")))
+            badge.setPos(12, 64)
+
         item.setData(0, int(node.id))
         item.setData(1, int(node.node_type))
         item.setData(2, node.is_unsolved)
         item.setData(3, is_root)
-        item.setPos(position)
-        item.setPen(QPen(QColor("#1f2937"), 2))
-        item.setBrush(QBrush(QColor("#ffffff")))
-        self.addItem(item)
-
-        title = QGraphicsSimpleTextItem(node.display_name, item)
-        title.setBrush(QBrush(QColor("#111827")))
-        title.setPos(12, 10)
-
-        subtitle = QGraphicsSimpleTextItem(node.serialized_name, item)
-        subtitle.setBrush(QBrush(QColor("#6b7280")))
-        subtitle.setPos(12, 34)
-
-        badge_text = f"members {node.member_count}" if node.member_count else node.node_type.name.removeprefix("NODE_")
-        badge = QGraphicsSimpleTextItem(badge_text, item)
-        badge.setBrush(QBrush(QColor("#2563eb" if not node.is_unsolved else "#9a3412")))
-        badge.setPos(12, 64)
-
         return item
 
     def _add_edge(
         self,
         edge: GraphEdgeRecord,
-        source_item: QGraphicsRectItem,
-        target_item: QGraphicsRectItem,
+        source_item: QGraphicsItem,
+        target_item: QGraphicsItem,
     ) -> QGraphicsPathItem:
         start = source_item.sceneBoundingRect().center()
         end = target_item.sceneBoundingRect().center()
@@ -152,7 +160,7 @@ class GraphScene(QGraphicsScene):
         return item
 
     def _handle_selection_changed(self) -> None:
-        selected_items = [item for item in self.selectedItems() if isinstance(item, QGraphicsRectItem)]
+        selected_items = self.selectedItems()
         if not selected_items:
             return
         node_id = selected_items[0].data(0)
@@ -163,9 +171,13 @@ class GraphScene(QGraphicsScene):
         for node_id, item in self._node_items.items():
             is_selected = node_id == self._selected_node_id
             is_unsolved = bool(item.data(2))
-            base_color = "#fde68a" if is_selected else "#ffffff"
-            if is_unsolved and not is_selected:
-                base_color = "#f5d0a9"
-            pen_color = "#f59e0b" if is_selected else "#1f2937"
-            item.setBrush(QBrush(QColor(base_color)))
-            item.setPen(QPen(QColor(pen_color), 3 if is_selected else 2))
+            if hasattr(item, "set_selected_state"):
+                item.set_selected_state(is_selected)
+                continue
+            if isinstance(item, QGraphicsRectItem):
+                base_color = "#fde68a" if is_selected else "#ffffff"
+                if is_unsolved and not is_selected:
+                    base_color = "#f5d0a9"
+                pen_color = "#f59e0b" if is_selected else "#1f2937"
+                item.setBrush(QBrush(QColor(base_color)))
+                item.setPen(QPen(QColor(pen_color), 3 if is_selected else 2))

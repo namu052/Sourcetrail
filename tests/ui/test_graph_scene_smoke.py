@@ -6,7 +6,6 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
-from PyQt6.QtWidgets import QGraphicsRectItem
 
 from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.core.types import EdgeType, NodeType, SourceLocation
@@ -59,9 +58,9 @@ def test_graph_scene_load_symbol_renders_database_graph(qtbot) -> None:
         view.show()
 
         view.focus_symbol(method_id, depth=1)
-        rect_items = [item for item in scene.items() if isinstance(item, QGraphicsRectItem)]
+        node_items = [item for item in scene.items() if item.data(0) is not None]
 
-        assert len(rect_items) == 3
+        assert len(node_items) == 3
         assert scene.sceneRect().width() > 0
         with qtbot.waitSignal(event_bus.symbol_selected):
             scene.on_node_clicked(external_id)
