@@ -19,6 +19,7 @@ from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.db.reader import DatabaseReader
 from sourcetrail_remake.ui.graph.scene import GraphScene
 from sourcetrail_remake.ui.graph.view import GraphView
+from sourcetrail_remake.ui.navigation.history import HistoryNavigator
 from sourcetrail_remake.ui.navigation.tabs import SymbolTabBar
 
 
@@ -37,6 +38,9 @@ class MainWindow(QMainWindow):
         self.reader = reader
         self.initial_symbol_id = initial_symbol_id
         self.current_symbol_id: NodeId | None = None
+        self.home_symbol_id: NodeId | None = initial_symbol_id
+        self.history_entries: list[NodeId] = []
+        self.history_index = -1
         self.graph_scene = GraphScene(reader=reader, event_bus=event_bus)
         self.graph_view = GraphView(self.graph_scene)
         self.setWindowTitle(DEFAULT_CONFIG.main_window_title)
@@ -44,7 +48,7 @@ class MainWindow(QMainWindow):
         self._build_shell()
         self._connect_signals()
         if self.reader is not None and self.initial_symbol_id is not None:
-            self.focus_symbol(self.initial_symbol_id, record_history=False)
+            self.focus_symbol(self.initial_symbol_id)
 
     def _build_shell(self) -> None:
         self.setDockNestingEnabled(True)
@@ -88,6 +92,9 @@ class MainWindow(QMainWindow):
     def _connect_signals(self) -> None:
         self.event_bus.symbol_selected.connect(self._on_symbol_selected)
         self.symbol_tabs.symbol_requested.connect(self._focus_symbol_from_tab)
+        self.history_navigator.back_requested.connect(self.navigate_back)
+        self.history_navigator.forward_requested.connect(self.navigate_forward)
+        self.history_navigator.home_requested.connect(self.navigate_home)
 
     def _add_dock(
         self,
@@ -131,10 +138,12 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
 
+        self.history_navigator = HistoryNavigator(strip)
         navigation_label = QLabel("Symbols", strip)
         navigation_label.setObjectName("graph-navigation-label")
         self.symbol_tabs = SymbolTabBar(strip)
 
+        layout.addWidget(self.history_navigator)
         layout.addWidget(navigation_label)
         layout.addWidget(self.symbol_tabs, stretch=1)
         return strip
@@ -172,16 +181,20 @@ class MainWindow(QMainWindow):
         return log_widget
 
     def focus_symbol(self, node_id: NodeId, *, record_history: bool = True) -> None:
-        del record_history
         if self.reader is None:
             return
         symbol = self.reader.get_symbol(node_id)
         if symbol is None:
             return
+        if self.home_symbol_id is None:
+            self.home_symbol_id = node_id
         self.current_symbol_id = node_id
         self.graph_view.focus_symbol(node_id, depth=1)
         self.symbol_tabs.open_symbol(symbol)
         self._update_selection_panel(symbol)
+        if record_history:
+            self._push_history(node_id)
+        self._update_history_controls()
 
         status_bar = self.statusBar()
         assert status_bar is not None
@@ -203,6 +216,38 @@ class MainWindow(QMainWindow):
             f"Type: {symbol.node_type.name.removeprefix('NODE_').replace('_', ' ').title()}"
         )
         self.selection_fqn_label.setText(f"Qualified name: {symbol.serialized_name}")
+
+    def navigate_back(self) -> None:
+        if self.history_index <= 0:
+            return
+        self.history_index -= 1
+        self.focus_symbol(self.history_entries[self.history_index], record_history=False)
+
+    def navigate_forward(self) -> None:
+        if self.history_index < 0 or self.history_index >= len(self.history_entries) - 1:
+            return
+        self.history_index += 1
+        self.focus_symbol(self.history_entries[self.history_index], record_history=False)
+
+    def navigate_home(self) -> None:
+        if self.home_symbol_id is None:
+            return
+        self.focus_symbol(self.home_symbol_id, record_history=False)
+
+    def _push_history(self, node_id: NodeId) -> None:
+        if self.history_index >= 0 and self.history_entries[self.history_index] == node_id:
+            return
+        if self.history_index < len(self.history_entries) - 1:
+            self.history_entries = self.history_entries[: self.history_index + 1]
+        self.history_entries.append(node_id)
+        self.history_index = len(self.history_entries) - 1
+
+    def _update_history_controls(self) -> None:
+        self.history_navigator.update_state(
+            can_go_back=self.history_index > 0,
+            can_go_forward=0 <= self.history_index < len(self.history_entries) - 1,
+            has_home=self.home_symbol_id is not None,
+        )
 
 
 def create_main_window(
