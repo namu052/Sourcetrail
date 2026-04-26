@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
+    QSplitter,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -71,7 +72,17 @@ class MainWindow(QMainWindow):
         central_layout.setContentsMargins(12, 12, 12, 12)
         central_layout.setSpacing(10)
         central_layout.addWidget(self._create_navigation_strip())
-        central_layout.addWidget(self.graph_view)
+        self.central_editor_splitter = QSplitter(Qt.Orientation.Horizontal, central)
+        self.central_editor_splitter.setObjectName("central-editor-splitter")
+        self.refactor_secondary_editor = QTextEdit(self.central_editor_splitter)
+        self.refactor_secondary_editor.setObjectName("refactor-secondary-editor")
+        self.refactor_secondary_editor.setReadOnly(True)
+        self.refactor_secondary_editor.setPlainText("Secondary editor")
+        self.refactor_secondary_editor.setVisible(False)
+        self.central_editor_splitter.addWidget(self.graph_view)
+        self.central_editor_splitter.addWidget(self.refactor_secondary_editor)
+        self.central_editor_splitter.setSizes([1, 0])
+        central_layout.addWidget(self.central_editor_splitter)
         self.setCentralWidget(central)
 
         self._add_dock(

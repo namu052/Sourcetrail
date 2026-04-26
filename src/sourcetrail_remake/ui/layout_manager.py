@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from PyQt6.QtCore import QByteArray, QSettings, Qt
-from PyQt6.QtWidgets import QDockWidget, QMainWindow
+from PyQt6.QtWidgets import QDockWidget, QMainWindow, QSplitter, QWidget
 
 
 class LayoutPreset(StrEnum):
@@ -37,6 +37,8 @@ class LayoutPresetSpec:
     name: LayoutPreset
     placements: tuple[DockPlacement, ...]
     dock_sizes: tuple[int, ...] = ()
+    secondary_editor_visible: bool = False
+    central_sizes: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,6 +89,7 @@ class LayoutManager:
                 window.addDockWidget(placement.area, dock)
                 dock.setVisible(placement.visible)
         self._resize_matching_docks(window, PRESET_SPECS[preset])
+        self._apply_central_editor_split(window, PRESET_SPECS[preset])
 
     def load(self, *, name: str = "current") -> LayoutSnapshot:
         self.settings.beginGroup(self.group)
@@ -108,6 +111,14 @@ class LayoutManager:
         if len(docks) != len(spec.dock_sizes):
             return
         window.resizeDocks(docks, list(spec.dock_sizes), Qt.Orientation.Horizontal)
+
+    def _apply_central_editor_split(self, window: QMainWindow, spec: LayoutPresetSpec) -> None:
+        secondary_editor = window.findChild(QWidget, "refactor-secondary-editor")
+        if secondary_editor is not None:
+            secondary_editor.setVisible(spec.secondary_editor_visible)
+        splitter = window.findChild(QSplitter, "central-editor-splitter")
+        if splitter is not None and spec.central_sizes:
+            splitter.setSizes(list(spec.central_sizes))
 
 
 def _bytes_value(value: object) -> bytes:
@@ -148,6 +159,20 @@ PRESET_SPECS: dict[LayoutPreset, LayoutPresetSpec] = {
             DockPlacement("graph-log-dock", Qt.DockWidgetArea.BottomDockWidgetArea, visible=True),
         ),
         dock_sizes=(180, 260, 320, 120, 120, 220),
+    ),
+    LayoutPreset.REFACTOR: LayoutPresetSpec(
+        name=LayoutPreset.REFACTOR,
+        placements=(
+            DockPlacement("graph-overview-dock", Qt.DockWidgetArea.LeftDockWidgetArea, False),
+            DockPlacement("graph-selection-dock", Qt.DockWidgetArea.RightDockWidgetArea, True),
+            DockPlacement("relation-window-dock", Qt.DockWidgetArea.RightDockWidgetArea, True),
+            DockPlacement("context-window-dock", Qt.DockWidgetArea.BottomDockWidgetArea, True),
+            DockPlacement("symbol-window-dock", Qt.DockWidgetArea.LeftDockWidgetArea, True),
+            DockPlacement("graph-log-dock", Qt.DockWidgetArea.BottomDockWidgetArea, False),
+        ),
+        dock_sizes=(120, 280, 320, 260, 260, 120),
+        secondary_editor_visible=True,
+        central_sizes=(1, 1),
     ),
     LayoutPreset.DEFAULT: LayoutPresetSpec(
         name=LayoutPreset.DEFAULT,
