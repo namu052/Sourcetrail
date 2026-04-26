@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, QTimer, pyqtSlot
 from PyQt6.QtWidgets import (
     QDockWidget,
     QHBoxLayout,
@@ -27,6 +27,11 @@ class ContextWindow(QDockWidget):
         self.reader = reader
         self.current_file = ""
         self.current_line = 0
+        self._pending_cursor: tuple[str, int, int] | None = None
+        self._update_timer = QTimer(self)
+        self._update_timer.setSingleShot(True)
+        self._update_timer.setInterval(150)
+        self._update_timer.timeout.connect(self._flush_pending_cursor)
         self.setObjectName("context-window-dock")
         self.setFeatures(
             QDockWidget.DockWidgetFeature.DockWidgetClosable
@@ -39,6 +44,18 @@ class ContextWindow(QDockWidget):
     @pyqtSlot(str, int, int)
     def on_cursor_moved(self, file: str, line: int, col: int) -> None:
         """Receive cursor movement events from the editor."""
+        self._pending_cursor = (file, line, col)
+        self._update_timer.start()
+
+    def refresh_now(self) -> None:
+        """Apply the latest queued cursor movement immediately."""
+        self._flush_pending_cursor()
+
+    def _flush_pending_cursor(self) -> None:
+        if self._pending_cursor is None:
+            return
+        file, line, col = self._pending_cursor
+        self._pending_cursor = None
         self.current_file = file
         self.current_line = line
         context = self.reader.find_context_at(file, line, col)
