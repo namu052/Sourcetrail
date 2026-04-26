@@ -145,13 +145,22 @@ MVP가 완성되면 **Sourcetrail_Remake 자체의 소스코드를 자신으로 
 
 ## Phase 2 DoD (= MVP 완성 기준)
 
+Evidence ledger: [`docs/generated/phase2/closeout-evidence.md`](../../generated/phase2/closeout-evidence.md)
+
 - [ ] F1 Context Window: 그래프/에디터 모두에서 호버/선택 시 정의 표시
+  - Partial evidence: editor cursor and Context Window refresh are tested; graph hover preview evidence is not present.
 - [ ] F2 Symbol Window: 3가지 정렬 모드, 더블클릭 점프
+  - Partial evidence: current Symbol Window tests cover outline, filter, access, icon, declaration/alphabetical sort, and double-click jump. The "3가지 정렬 모드" wording is not fully evidenced.
 - [ ] F3 Relation Window: Tree/Graph 토글, 3축 필터, 다중 창 + Lock
+  - Partial evidence: Relation Window tree tabs, lazy loading, depth, empty state, recursive markers, and selection are tested. Graph/Tree toggle and multi-window Lock are not evidenced.
 - [ ] F4 Editor: 스코프별 색상, self/cls/데코레이터 스타일, 닫는 블록 annotation
+  - Partial evidence: SyntaxDecorator, semantic analyzer aggregation, unused/deprecated/undefined markers, and decoration preferences are tested. Closing-block annotation and the exact self/cls scope styling are not evidenced.
 - [ ] **자가 호스팅 dogfooding 시나리오 6종 전부 통과**
+  - Partial evidence: sample Django MVP integration passes. Full Sourcetrail_Remake self-analysis dogfooding is not evidenced.
 - [ ] Beta 릴리스 (GitHub Release + 내부 공개)
-- [ ] 테스트 커버리지 80% 달성
+  - No beta tag or GitHub Release evidence yet.
+- [x] 테스트 커버리지 80% 달성
+  - Evidence: `bash scripts/run-tests.sh` reports 77 passed and 90% total coverage.
 
 ## 위험 & 완화
 

@@ -238,14 +238,24 @@ Editor.goto(...)       GraphScene.load_symbol(id)   ContextWindow 갱신
 
 ## Phase 2 DoD (MVP DoD)
 
-- [ ] **4개 Source Insight 패널 모두 작동**: Context / Symbol / Relation / Syntax
+Evidence ledger: [`docs/generated/phase2/closeout-evidence.md`](../generated/phase2/closeout-evidence.md)
+
+- [x] **4개 Source Insight 패널 모두 작동**: Context / Symbol / Relation / Syntax
+  - Evidence: Context/Symbol/Relation UI tests, SyntaxDecorator and semantic decoration tests.
 - [ ] 커서 이동 → 3개 패널 동시 업데이트 (150ms 내)
-- [ ] 3개 레이아웃 프리셋 저장/복원
-- [ ] Unused variable, deprecated call 데코레이션 on/off 가능
+  - Partial evidence: `QScintillaEditor` debounce and Context Window cursor refresh are tested. A single end-to-end timing assertion for all three panels is still missing.
+- [x] 3개 레이아웃 프리셋 저장/복원
+  - Evidence: `tests/ui/test_layout_manager.py`.
+- [x] Unused variable, deprecated call 데코레이션 on/off 가능
+  - Evidence: preferences dialog and semantic decoration flow tests.
 - [ ] Django (~5만 LoC) 프로젝트에서 MVP 시나리오 15가지 모두 통과
-- [ ] 단위 테스트 커버리지 75%
+  - Partial evidence: `tests/fixtures/sample-django` MVP integration passes. Full-scale 50k LoC Django dogfooding is not evidenced.
+- [x] 단위 테스트 커버리지 75%
+  - Evidence: `bash scripts/run-tests.sh` reports 77 passed and 90% total coverage.
 - [ ] **Beta 릴리스 태그** (외부 공개, GitHub Release)
+  - No beta tag or GitHub Release evidence yet. Existing release tag evidence stops at `v0.1.0-alpha.1`.
 - [ ] **리스크 게이트 G3 통과**: MVP 완성
+  - Pending G3 disposition after Beta release and the full-scale Django/dogfooding decision.
 
 ### MVP 시나리오 (G3 통과 기준)
 
