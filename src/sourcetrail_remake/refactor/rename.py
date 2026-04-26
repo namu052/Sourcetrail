@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
 import difflib
 import keyword
@@ -62,12 +63,28 @@ class ScopeConflict:
     message: str
 
 
+@dataclass(frozen=True, slots=True)
+class RenameResult:
+    """Result of applying a rename preview."""
+
+    node_id: NodeId
+    old_name: str
+    new_name: str
+    changed_files: tuple[Path, ...]
+
+
 class RopeRenameService:
     """Open a Rope project and resolve Sourcetrail node IDs to rename targets."""
 
-    def __init__(self, project_root: Path, db_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        project_root: Path,
+        db_path: Path | None = None,
+        reindex_callback: Callable[[tuple[Path, ...]], None] | None = None,
+    ) -> None:
         self.project_root = Path(project_root).resolve()
         self.db_path = None if db_path is None else Path(db_path).resolve()
+        self.reindex_callback = reindex_callback
 
     def open_project(self) -> Project:
         """Return a Rope project rooted at the indexed project directory."""
@@ -103,6 +120,21 @@ class RopeRenameService:
             )
         finally:
             project.close()
+
+    def apply(self, preview: RenamePreview) -> RenameResult:
+        """Write previewed file contents and request index refresh."""
+        for change in preview.changes:
+            change.path.write_text(change.new_text, encoding="utf-8")
+
+        changed_files = preview.affected_files
+        if self.reindex_callback is not None:
+            self.reindex_callback(changed_files)
+        return RenameResult(
+            node_id=preview.node_id,
+            old_name=preview.old_name,
+            new_name=preview.new_name,
+            changed_files=changed_files,
+        )
 
     def _load_target(self, node_id: NodeId) -> RenameTarget:
         assert self.db_path is not None
