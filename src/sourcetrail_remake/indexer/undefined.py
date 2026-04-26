@@ -9,7 +9,7 @@ from pathlib import Path
 
 import jedi
 
-from sourcetrail_remake.ui.editor.decorator import Decoration, DecorationKind, SourceRange
+from sourcetrail_remake.core.diagnostics import Decoration, DecorationKind, SourceRange
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +67,12 @@ class _UndefinedVisitor(ast.NodeVisitor):
         return self._references
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self._visit_function_scope(node)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        self._visit_function_scope(node)
+
+    def _visit_function_scope(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
         self._define(node.name)
         for decorator in node.decorator_list:
             self.visit(decorator)
@@ -76,9 +82,6 @@ class _UndefinedVisitor(ast.NodeVisitor):
         for statement in node.body:
             self.visit(statement)
         self._pop_scope()
-
-    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
-        self.visit_FunctionDef(node)
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         self._define(node.name)

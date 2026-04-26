@@ -170,14 +170,12 @@ class RelationQuery:
     ) -> list[tuple[int]]:
         if direction == "incoming":
             query = (
-                "SELECT source_node_id FROM edge "
-                "WHERE target_node_id = ? AND type = ? ORDER BY id;"
+                "SELECT source_node_id FROM edge WHERE target_node_id = ? AND type = ? ORDER BY id;"
             )
             parameters: tuple[int, ...] = (node_id, int(edge_type))
         elif direction == "outgoing":
             query = (
-                "SELECT target_node_id FROM edge "
-                "WHERE source_node_id = ? AND type = ? ORDER BY id;"
+                "SELECT target_node_id FROM edge WHERE source_node_id = ? AND type = ? ORDER BY id;"
             )
             parameters = (node_id, int(edge_type))
         else:

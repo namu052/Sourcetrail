@@ -8,7 +8,7 @@ from pathlib import Path
 
 import jedi
 
-from sourcetrail_remake.ui.editor.decorator import Decoration, DecorationKind, SourceRange
+from sourcetrail_remake.core.diagnostics import Decoration, DecorationKind, SourceRange
 
 
 @dataclass(frozen=True, slots=True)

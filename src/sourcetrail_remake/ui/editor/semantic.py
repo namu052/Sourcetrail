@@ -5,11 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from sourcetrail_remake.core.diagnostics import Decoration
 from sourcetrail_remake.indexer.deprecation import DeprecationAnalyzer
 from sourcetrail_remake.indexer.undefined import UndefinedReferenceAnalyzer
 from sourcetrail_remake.indexer.unused import UnusedVariableAnalyzer
 from sourcetrail_remake.ui.dialogs.preferences import DecorationPreferences
-from sourcetrail_remake.ui.editor.decorator import Decoration
 
 
 @dataclass(slots=True)

@@ -7,6 +7,7 @@ from pathlib import Path
 from PyQt6.Qsci import QsciLexerPython, QsciScintilla
 from PyQt6.QtCore import QTimer, pyqtSignal
 from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtWidgets import QWidget
 
 EDITOR_FONT_FAMILY = "Consolas"
 EDITOR_FONT_SIZE = 10
@@ -22,7 +23,7 @@ class QScintillaEditor(QsciScintilla):
 
     cursor_moved = pyqtSignal(str, int, int)
 
-    def __init__(self, parent: object | None = None, *, debounce_ms: int = 150) -> None:
+    def __init__(self, parent: QWidget | None = None, *, debounce_ms: int = 150) -> None:
         super().__init__(parent)
         self._path: Path | None = None
         self._debounce_timer = QTimer(self)

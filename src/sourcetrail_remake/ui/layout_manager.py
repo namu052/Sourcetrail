@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-from PyQt6.QtCore import QSettings, Qt
+from PyQt6.QtCore import QByteArray, QSettings, Qt
 from PyQt6.QtWidgets import QDockWidget, QMainWindow
 
 
@@ -54,8 +54,8 @@ class LayoutManager:
 
     def save(self, window: QMainWindow, *, name: str = "current") -> LayoutSnapshot:
         snapshot = LayoutSnapshot(
-            geometry=bytes(window.saveGeometry()),
-            state=bytes(window.saveState()),
+            geometry=_bytes_value(window.saveGeometry()),
+            state=_bytes_value(window.saveState()),
         )
         self.settings.beginGroup(self.group)
         self.settings.beginGroup(name)
@@ -95,9 +95,8 @@ def _bytes_value(value: object) -> bytes:
         return value
     if isinstance(value, bytearray):
         return bytes(value)
-    if hasattr(value, "data"):
-        data = value.data()
-        return bytes(data)
+    if isinstance(value, QByteArray):
+        return bytes(value.data())
     return b""
 
 

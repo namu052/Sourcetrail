@@ -6,7 +6,7 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 
-from sourcetrail_remake.ui.editor.decorator import Decoration, DecorationKind, SourceRange
+from sourcetrail_remake.core.diagnostics import Decoration, DecorationKind, SourceRange
 
 
 @dataclass(frozen=True, slots=True)

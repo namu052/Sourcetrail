@@ -119,9 +119,7 @@ class SymbolIndex:
         for child in getattr(node, "children", []):
             child_type = getattr(child, "type", None)
             if child_type == "decorated":
-                symbols.extend(
-                    self._walk_decorated(child, module_name=module_name, owners=owners)
-                )
+                symbols.extend(self._walk_decorated(child, module_name=module_name, owners=owners))
             elif child_type == "classdef":
                 symbols.append(self._build_class(child, module_name=module_name, owners=owners))
             elif child_type == "funcdef":
@@ -205,8 +203,10 @@ class SymbolIndex:
         name = str(name_node.value)
         in_class = bool(owners and owners[-1].node_type == NodeType.NODE_CLASS)
         icon_kind = self._function_icon_kind(decorators, in_class)
-        node_type = NodeType.NODE_FIELD if icon_kind == SymbolIconKind.PROPERTY else (
-            NodeType.NODE_METHOD if in_class else NodeType.NODE_FUNCTION
+        node_type = (
+            NodeType.NODE_FIELD
+            if icon_kind == SymbolIconKind.PROPERTY
+            else (NodeType.NODE_METHOD if in_class else NodeType.NODE_FUNCTION)
         )
         qualified_name = self._qualified_name(module_name, owners, name)
         shell = SymbolOutlineItem(

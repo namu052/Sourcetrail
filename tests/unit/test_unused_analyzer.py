@@ -11,10 +11,7 @@ from sourcetrail_remake.ui.editor.decorator import DecorationKind
 @pytest.mark.unit
 def test_unused_variable_analyzer_reports_unread_assignment() -> None:
     diagnostics = UnusedVariableAnalyzer().analyze_text(
-        "def run(value):\n"
-        "    used = value\n"
-        "    stale = 1\n"
-        "    return used\n"
+        "def run(value):\n    used = value\n    stale = 1\n    return used\n"
     )
 
     assert [(item.name, item.range.start_line) for item in diagnostics] == [("stale", 3)]
@@ -23,9 +20,7 @@ def test_unused_variable_analyzer_reports_unread_assignment() -> None:
 @pytest.mark.unit
 def test_unused_variable_analyzer_skips_underscore_names() -> None:
     diagnostics = UnusedVariableAnalyzer().analyze_text(
-        "def run(value):\n"
-        "    _ignored = value\n"
-        "    return value\n"
+        "def run(value):\n    _ignored = value\n    return value\n"
     )
 
     assert diagnostics == []

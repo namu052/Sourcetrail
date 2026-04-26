@@ -11,8 +11,7 @@ from sourcetrail_remake.ui.editor.decorator import DecorationKind
 @pytest.mark.unit
 def test_undefined_reference_analyzer_reports_unbound_load() -> None:
     diagnostics = UndefinedReferenceAnalyzer().analyze_text(
-        "def run(value):\n"
-        "    return value + missing_name\n"
+        "def run(value):\n    return value + missing_name\n"
     )
 
     assert [(item.name, item.range.start_line) for item in diagnostics] == [("missing_name", 2)]
@@ -21,9 +20,7 @@ def test_undefined_reference_analyzer_reports_unbound_load() -> None:
 @pytest.mark.unit
 def test_undefined_reference_analyzer_skips_imports_and_builtins() -> None:
     diagnostics = UndefinedReferenceAnalyzer().analyze_text(
-        "import pathlib\n"
-        "def run(value):\n"
-        "    return len(pathlib.Path(str(value)))\n"
+        "import pathlib\ndef run(value):\n    return len(pathlib.Path(str(value)))\n"
     )
 
     assert diagnostics == []

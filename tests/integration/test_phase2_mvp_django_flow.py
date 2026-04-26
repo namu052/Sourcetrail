@@ -7,11 +7,11 @@ from uuid import uuid4
 
 import pytest
 
+from sourcetrail_remake.core.diagnostics import DecorationKind
 from sourcetrail_remake.db.reader import DatabaseReader
 from sourcetrail_remake.db.writer import DatabaseWriter
 from sourcetrail_remake.indexer.relation_query import RelationQuery
 from sourcetrail_remake.indexer.service import IndexerService
-from sourcetrail_remake.ui.editor.decorator import DecorationKind
 from sourcetrail_remake.ui.editor.semantic import SemanticDecorationService
 
 

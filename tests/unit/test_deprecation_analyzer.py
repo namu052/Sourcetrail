@@ -28,9 +28,7 @@ def test_deprecation_analyzer_finds_decorator_and_call_site() -> None:
 @pytest.mark.unit
 def test_deprecation_analyzer_finds_warning_pattern() -> None:
     findings = DeprecationAnalyzer().analyze_text(
-        "import warnings\n"
-        "def old():\n"
-        "    warnings.warn('old', DeprecationWarning)\n"
+        "import warnings\ndef old():\n    warnings.warn('old', DeprecationWarning)\n"
     )
 
     assert findings[0].name == "DeprecationWarning"
@@ -39,11 +37,7 @@ def test_deprecation_analyzer_finds_warning_pattern() -> None:
 
 @pytest.mark.unit
 def test_deprecation_analyzer_exports_decorations() -> None:
-    decorations = DeprecationAnalyzer().decorations_for_text(
-        "@deprecated\n"
-        "def old():\n"
-        "    pass\n"
-    )
+    decorations = DeprecationAnalyzer().decorations_for_text("@deprecated\ndef old():\n    pass\n")
 
     assert decorations[0].kind == DecorationKind.DEPRECATED
     assert decorations[0].message == "Deprecated old: decorated as deprecated"

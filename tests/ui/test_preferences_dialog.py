@@ -5,11 +5,11 @@ from __future__ import annotations
 import pytest
 from PyQt6.QtWidgets import QCheckBox
 
+from sourcetrail_remake.core.diagnostics import DecorationKind
 from sourcetrail_remake.ui.dialogs.preferences import (
     DecorationPreferences,
     PreferencesDialog,
 )
-from sourcetrail_remake.ui.editor.decorator import DecorationKind
 
 
 @pytest.mark.ui

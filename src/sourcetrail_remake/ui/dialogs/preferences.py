@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from PyQt6.QtWidgets import QCheckBox, QDialog, QDialogButtonBox, QFormLayout, QWidget
 
-from sourcetrail_remake.ui.editor.decorator import DecorationKind
+from sourcetrail_remake.core.diagnostics import DecorationKind
 
 
 @dataclass(frozen=True, slots=True)

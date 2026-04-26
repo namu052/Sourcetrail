@@ -9,16 +9,12 @@ import pytest
 from PyQt6.Qsci import QsciScintilla
 from PyQt6.QtCore import QSettings
 
+from sourcetrail_remake.core.diagnostics import Decoration, DecorationKind, SourceRange
 from sourcetrail_remake.indexer.deprecation import DeprecationAnalyzer
 from sourcetrail_remake.indexer.undefined import UndefinedReferenceAnalyzer
 from sourcetrail_remake.indexer.unused import UnusedVariableAnalyzer
 from sourcetrail_remake.ui.dialogs.preferences import DecorationPreferences
-from sourcetrail_remake.ui.editor.decorator import (
-    Decoration,
-    DecorationKind,
-    SourceRange,
-    SyntaxDecorator,
-)
+from sourcetrail_remake.ui.editor.decorator import SyntaxDecorator
 from sourcetrail_remake.ui.editor.semantic import SemanticDecorationService
 from sourcetrail_remake.ui.layout_manager import LayoutManager, LayoutSnapshot
 
