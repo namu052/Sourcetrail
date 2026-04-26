@@ -129,19 +129,23 @@ class RopeRenameService:
         undo_record = self.undo_journal.backup(
             tuple(UndoEntry(path=change.path, old_text=change.old_text) for change in preview.changes)
         )
-        for change in preview.changes:
-            change.path.write_text(change.new_text, encoding="utf-8")
+        try:
+            for change in preview.changes:
+                change.path.write_text(change.new_text, encoding="utf-8")
 
-        changed_files = preview.affected_files
-        if self.reindex_callback is not None:
-            self.reindex_callback(changed_files)
-        return RenameResult(
-            node_id=preview.node_id,
-            old_name=preview.old_name,
-            new_name=preview.new_name,
-            changed_files=changed_files,
-            undo_record=undo_record,
-        )
+            changed_files = preview.affected_files
+            if self.reindex_callback is not None:
+                self.reindex_callback(changed_files)
+            return RenameResult(
+                node_id=preview.node_id,
+                old_name=preview.old_name,
+                new_name=preview.new_name,
+                changed_files=changed_files,
+                undo_record=undo_record,
+            )
+        except Exception:
+            self.undo_journal.restore(undo_record)
+            raise
 
     def undo(self, result: RenameResult) -> None:
         """Restore files captured before apply."""
