@@ -174,6 +174,10 @@ PRESET_SPECS: dict[LayoutPreset, LayoutPresetSpec] = {
         secondary_editor_visible=True,
         central_sizes=(1, 1),
     ),
+    LayoutPreset.CUSTOM: LayoutPresetSpec(
+        name=LayoutPreset.CUSTOM,
+        placements=(),
+    ),
     LayoutPreset.DEFAULT: LayoutPresetSpec(
         name=LayoutPreset.DEFAULT,
         placements=(

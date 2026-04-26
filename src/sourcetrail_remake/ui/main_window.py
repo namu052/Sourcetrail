@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QSettings, Qt
 from PyQt6.QtGui import QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QDockWidget,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QMainWindow,
     QSplitter,
@@ -26,6 +27,7 @@ from sourcetrail_remake.ui.controls.zoom import ZoomControl
 from sourcetrail_remake.ui.dialogs.references import ReferencesDialog
 from sourcetrail_remake.ui.graph.scene import GraphScene
 from sourcetrail_remake.ui.graph.view import GraphView
+from sourcetrail_remake.ui.layout_manager import LayoutManager, LayoutPreset
 from sourcetrail_remake.ui.navigation.history import HistoryNavigator
 from sourcetrail_remake.ui.navigation.search import SymbolSearchBar
 from sourcetrail_remake.ui.navigation.tabs import SymbolTabBar
@@ -51,6 +53,7 @@ class MainWindow(QMainWindow):
         self.history_entries: list[NodeId] = []
         self.history_index = -1
         self._references_dialog: ReferencesDialog | None = None
+        self.layout_manager = LayoutManager(QSettings())
         self.graph_scene = GraphScene(reader=reader, event_bus=event_bus)
         self.graph_view = GraphView(self.graph_scene)
         self.setWindowTitle(DEFAULT_CONFIG.main_window_title)
@@ -367,6 +370,41 @@ class MainWindow(QMainWindow):
         occurrences = RelationQuery(self.reader.db_path).get_references(self.current_symbol_id)
         self._references_dialog = ReferencesDialog(occurrences, self)
         self._references_dialog.show()
+
+    def apply_layout_preset(self, preset: LayoutPreset) -> bool:
+        """Apply one of the Week 20 productivity layouts."""
+        if preset == LayoutPreset.CUSTOM:
+            restored = self.layout_manager.restore(self, name=LayoutPreset.CUSTOM.value)
+            if restored:
+                self._show_status("Custom layout restored")
+            else:
+                self._show_status("No custom layout saved")
+            return restored
+        self.layout_manager.apply_preset(self, preset)
+        self._show_status(f"Layout applied: {preset.value.replace('_', ' ').title()}")
+        return True
+
+    def prompt_save_custom_layout(self) -> bool:
+        """Ask for confirmation before saving the current state as layout D."""
+        name, accepted = QInputDialog.getText(
+            self,
+            "Save Custom Layout",
+            "Layout name",
+            text=LayoutPreset.CUSTOM.value,
+        )
+        if not accepted:
+            return False
+        layout_name = name.strip() or LayoutPreset.CUSTOM.value
+        self.layout_manager.save(self, name=layout_name)
+        if layout_name != LayoutPreset.CUSTOM.value:
+            self.layout_manager.save(self, name=LayoutPreset.CUSTOM.value)
+        self._show_status(f"Custom layout saved: {layout_name}")
+        return True
+
+    def _show_status(self, message: str) -> None:
+        status_bar = self.statusBar()
+        assert status_bar is not None
+        status_bar.showMessage(message)
 
 
 def create_main_window(
