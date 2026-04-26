@@ -147,7 +147,11 @@ PRESET_SPECS: dict[LayoutPreset, LayoutPresetSpec] = {
     LayoutPreset.GRAPH_CENTRIC: LayoutPresetSpec(
         name=LayoutPreset.GRAPH_CENTRIC,
         placements=(
-            DockPlacement("graph-overview-dock", Qt.DockWidgetArea.LeftDockWidgetArea, visible=True),
+            DockPlacement(
+                "graph-overview-dock",
+                Qt.DockWidgetArea.LeftDockWidgetArea,
+                visible=True,
+            ),
             DockPlacement(
                 "graph-selection-dock",
                 Qt.DockWidgetArea.RightDockWidgetArea,

@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QDockWidget, QStatusBar
 from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.ui.controls.bookmarks import BookmarkControl
 from sourcetrail_remake.ui.graph.view import GraphView
+from sourcetrail_remake.ui.layout_manager import LayoutPreset
 from sourcetrail_remake.ui.main_window import create_main_window
 from sourcetrail_remake.ui.navigation.tabs import SymbolTabBar
 
@@ -26,3 +27,7 @@ def test_main_window_smoke(qtbot) -> None:
     assert window.findChild(QDockWidget, "graph-overview-dock") is not None
     assert window.findChild(QDockWidget, "graph-selection-dock") is not None
     assert window.findChild(QDockWidget, "graph-log-dock") is not None
+    assert window.layout_actions[LayoutPreset.READING].shortcut().toString() == "Ctrl+Alt+1"
+    assert window.layout_actions[LayoutPreset.GRAPH_CENTRIC].shortcut().toString() == "Ctrl+Alt+2"
+    assert window.layout_actions[LayoutPreset.REFACTOR].shortcut().toString() == "Ctrl+Alt+3"
+    assert window.layout_actions[LayoutPreset.CUSTOM].shortcut().toString() == "Ctrl+Alt+4"

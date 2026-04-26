@@ -49,10 +49,36 @@ def test_layout_manager_applies_source_insight_preset(qtbot, tmp_path: Path) -> 
 
     assert window.dockWidgetArea(context_dock) == Qt.DockWidgetArea.LeftDockWidgetArea
     assert set(PRESET_SPECS) == {
+        LayoutPreset.READING,
+        LayoutPreset.GRAPH_CENTRIC,
+        LayoutPreset.REFACTOR,
+        LayoutPreset.CUSTOM,
         LayoutPreset.DEFAULT,
         LayoutPreset.SOURCE_INSIGHT,
         LayoutPreset.WIDE,
     }
+
+
+@pytest.mark.ui
+def test_layout_manager_applies_refactor_split(qtbot, tmp_path: Path) -> None:
+    from PyQt6.QtWidgets import QSplitter, QTextEdit
+
+    settings = QSettings(str(tmp_path / "layout.ini"), QSettings.Format.IniFormat)
+    manager = LayoutManager(settings)
+    window = QMainWindow()
+    qtbot.addWidget(window)
+    splitter = QSplitter(Qt.Orientation.Horizontal, window)
+    splitter.setObjectName("central-editor-splitter")
+    splitter.addWidget(QTextEdit("Primary", splitter))
+    secondary = QTextEdit("Secondary", splitter)
+    secondary.setObjectName("refactor-secondary-editor")
+    secondary.setVisible(False)
+    splitter.addWidget(secondary)
+    window.setCentralWidget(splitter)
+
+    manager.apply_preset(window, LayoutPreset.REFACTOR)
+
+    assert not secondary.isHidden()
 
 
 def _dock(object_name: str):

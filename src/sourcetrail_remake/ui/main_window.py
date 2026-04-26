@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PyQt6.QtCore import QSettings, Qt
-from PyQt6.QtGui import QKeySequence, QShortcut
+from PyQt6.QtGui import QAction, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QDockWidget,
     QHBoxLayout,
@@ -59,6 +59,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(DEFAULT_CONFIG.main_window_title)
         self.resize(1440, 900)
         self._build_shell()
+        self._build_layout_menu()
         self._connect_signals()
         if self.reader is not None:
             self.search_bar.set_catalog(self.reader.list_symbols())
@@ -110,6 +111,44 @@ class MainWindow(QMainWindow):
         status_bar = self.statusBar()
         assert status_bar is not None
         status_bar.showMessage("Ready")
+
+    def _build_layout_menu(self) -> None:
+        menu_bar = self.menuBar()
+        assert menu_bar is not None
+        layout_menu = menu_bar.addMenu("&Layout")
+        assert layout_menu is not None
+        self.layout_actions: dict[LayoutPreset, QAction] = {}
+        shortcuts = {
+            LayoutPreset.READING: "Ctrl+Alt+1",
+            LayoutPreset.GRAPH_CENTRIC: "Ctrl+Alt+2",
+            LayoutPreset.REFACTOR: "Ctrl+Alt+3",
+            LayoutPreset.CUSTOM: "Ctrl+Alt+4",
+        }
+        labels = {
+            LayoutPreset.READING: "A - Reading",
+            LayoutPreset.GRAPH_CENTRIC: "B - Graph-centric",
+            LayoutPreset.REFACTOR: "C - Refactor",
+            LayoutPreset.CUSTOM: "D - Custom",
+        }
+        for preset in (
+            LayoutPreset.READING,
+            LayoutPreset.GRAPH_CENTRIC,
+            LayoutPreset.REFACTOR,
+            LayoutPreset.CUSTOM,
+        ):
+            action = QAction(labels[preset], self)
+            action.setObjectName(f"layout-{preset.value}-action")
+            action.setShortcut(QKeySequence(shortcuts[preset]))
+            action.triggered.connect(
+                lambda _checked=False, preset=preset: self.apply_layout_preset(preset)
+            )
+            layout_menu.addAction(action)
+            self.layout_actions[preset] = action
+        layout_menu.addSeparator()
+        self.save_custom_layout_action = QAction("Save Custom Layout...", self)
+        self.save_custom_layout_action.setObjectName("layout-save-custom-action")
+        self.save_custom_layout_action.triggered.connect(self.prompt_save_custom_layout)
+        layout_menu.addAction(self.save_custom_layout_action)
 
     def _connect_signals(self) -> None:
         self.event_bus.symbol_selected.connect(self._on_symbol_selected)
