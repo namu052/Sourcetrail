@@ -3,7 +3,7 @@
 Generated: 2026-04-26
 
 This document records the evidence currently available for the Phase 2 MVP closeout gate.
-It is an evidence ledger, not the final G3 approval record.
+G3 disposition is recorded separately in [`g3-risk-gate.md`](g3-risk-gate.md).
 
 ## Automated Verification
 
@@ -39,7 +39,7 @@ All planned D41-D80 day commits are present in git history.
 | Django project MVP scenario | Partially verified | `tests/integration/test_phase2_mvp_django_flow.py` covers `tests/fixtures/sample-django`. This is not a 50k LoC Django project. |
 | Unit test coverage target | Verified | `bash scripts/run-tests.sh` reports 90% total coverage. |
 | Beta release tag / GitHub Release | Not evidenced | Existing tags include `v0.1.0-alpha.1`; no beta tag or GitHub Release draft evidence was found. |
-| G3 risk gate passed | Not evidenced | No committed G3 closeout record exists yet. |
+| G3 risk gate passed | Conditional pass recorded | `docs/generated/phase2/g3-risk-gate.md`; release-scale evidence remains pending. |
 
 ## MVP Scenario Coverage
 
@@ -63,7 +63,6 @@ Implementation and automated test evidence are strong enough to support a Phase 
 - Full tests pass.
 - Coverage target is exceeded.
 
-Phase 2 should not be marked fully complete until the remaining release and gate evidence is added:
+Phase 2 should not be marked fully complete until the remaining release evidence is added:
 - Create or document the beta release tag / GitHub Release draft.
-- Record G3 risk gate disposition.
 - Decide whether the 50k LoC Django requirement is mandatory now or explicitly accepted as a Phase 3 carry-over with `sample-django` as the MVP proxy.
