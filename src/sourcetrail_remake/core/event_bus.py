@@ -13,6 +13,7 @@ class EventBus(QObject):
     symbol_deselected = pyqtSignal()
 
     file_opened = pyqtSignal(str, int)
+    file_saved = pyqtSignal(str)
     file_closed = pyqtSignal(object)
     cursor_moved = pyqtSignal(str, int, int)
 
