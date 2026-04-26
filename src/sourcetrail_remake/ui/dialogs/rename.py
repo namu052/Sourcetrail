@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QThread, Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -17,9 +17,43 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from sourcetrail_remake.refactor.rename import FileChange, RenamePreview, ScopeConflict
+from sourcetrail_remake.refactor.rename import (
+    FileChange,
+    RenamePreview,
+    RenameResult,
+    RopeRenameService,
+    ScopeConflict,
+)
 
 ROLE_PATH = int(Qt.ItemDataRole.UserRole)
+
+
+class RenameApplyWorker(QThread):
+    """Apply a prepared rename on a background Qt thread."""
+
+    applied = pyqtSignal(object)
+    failed = pyqtSignal(object)
+
+    def __init__(
+        self,
+        service: RopeRenameService,
+        preview: RenamePreview,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.service = service
+        self.preview = preview
+        self.result: RenameResult | None = None
+        self.error: Exception | None = None
+
+    def run(self) -> None:
+        try:
+            self.result = self.service.apply(self.preview)
+        except Exception as exc:
+            self.error = exc
+            self.failed.emit(exc)
+            return
+        self.applied.emit(self.result)
 
 
 class RenameDialog(QDialog):
