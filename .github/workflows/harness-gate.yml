@@ -1,0 +1,97 @@
+name: harness-gate
+
+# 공용 하네스 게이트 (Sourcetrail_Remake / Python).
+# 풀 빌드/테스트(uv sync + pytest)는 별도 ci.yml(Phase 0 D2에 추가).
+# 본 워크플로는 환경 무관 게이트만.
+# SoT: docs/references/build-and-test.md §6
+
+on:
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - 'docs/documentation/**'
+      - 'docs/readme/**'
+      - 'CHANGELOG.md'
+      - 'AUTHORS.txt'
+      - 'SPONSORS.md'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # docs-freshness가 origin/master 비교 필요
+
+      # bash 스크립트는 Git for Windows의 bash로 실행 (windows-latest는 기본 포함)
+      - name: shell info
+        shell: bash
+        run: |
+          bash --version
+          uname -a
+
+      # uv 설치 (lint/type-check가 필요할 때 활용; pyproject.toml 없으면 graceful skip)
+      - name: setup uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      # uv 환경 설정 (pyproject.toml이 있을 때만)
+      - name: uv sync (if pyproject.toml exists)
+        shell: bash
+        run: |
+          if [ -f pyproject.toml ]; then
+            uv sync --all-extras
+          else
+            echo "pyproject.toml missing (pre-Phase-0 state) — skipping uv sync"
+          fi
+
+      - name: lint (ruff)
+        shell: bash
+        run: bash scripts/lint.sh
+
+      - name: type-check (mypy)
+        shell: bash
+        run: bash scripts/type-check.sh
+
+      - name: structure-check
+        shell: bash
+        run: bash scripts/structure-check.sh
+
+      - name: docs-freshness
+        shell: bash
+        run: bash scripts/docs-freshness.sh
+
+      - name: check-adapter-sync
+        shell: bash
+        run: bash scripts/check-adapter-sync.sh
+
+      - name: PR size + auto-label
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          loc=$(git diff --shortstat origin/master...HEAD | grep -oE '[0-9]+ insertion' | awk '{s+=$1} END {print s+0}')
+          if [ "$loc" -gt 1000 ]; then size_label="needs-human-review"
+          elif [ "$loc" -gt 300 ]; then size_label="size:medium"
+          else size_label="size:small"
+          fi
+          echo "PR LOC ≈ $loc → $size_label"
+
+          # C++ legacy touch 자동 라벨
+          legacy_touched="false"
+          if git diff --name-only origin/master...HEAD | grep -E '^(CMakeLists\.txt|cmake/|script/|\.clang-format|\.travis\.yml|appveyor\.yml|src/(lib|app|indexer|external|test)/|java_indexer/|ide_plugins/|bin/|deployment/|setup/|testing/|docs/(documentation|readme)/)' >/dev/null; then
+            legacy_touched="true"
+          fi
+
+          if [ -n "${{ github.event.pull_request.number }}" ]; then
+            gh pr edit ${{ github.event.pull_request.number }} --add-label "$size_label" || true
+            if [ "$legacy_touched" = "true" ]; then
+              gh pr edit ${{ github.event.pull_request.number }} --add-label "legacy-cpp-touch" || true
+            fi
+          fi

@@ -1,0 +1,101 @@
+# Codex CLI — Balanced (default) profile  [Sourcetrail_Remake / Python]
+# SoT: docs/sop/codex.md, docs/autonomy-levels.md (L2)
+# 동일 내용을 .codex/config.balanced.toml에서도 명시적으로 참조 가능.
+
+approval_policy = "on-request"
+sandbox_mode    = "workspace-write"
+network_access  = false
+auto_confirm    = false
+
+[shell]
+# 자동 실행 허용 명령
+allow = [
+  # 검증 게이트
+  "bash scripts/verify-all.sh",
+  "bash scripts/lint.sh",
+  "bash scripts/type-check.sh",
+  "bash scripts/structure-check.sh",
+  "bash scripts/docs-freshness.sh",
+  "bash scripts/check-adapter-sync.sh",
+  "bash scripts/changed-files.sh",
+  # 테스트 / 벤치 / 호환성
+  "bash scripts/run-tests.sh*",
+  "bash scripts/compat-check.sh*",
+  "bash scripts/bench.sh*",
+  # uv (Python 의존성 + 실행)
+  "uv sync*",
+  "uv add*",                       # 의존성 추가는 OK, uv.lock 동시 커밋 의무
+  "uv run pytest*",
+  "uv run ruff*",
+  "uv run mypy*",
+  "uv run python*",
+  "uv run srm*",
+  # git read-only
+  "git status",
+  "git diff*",
+  "git log*",
+  "git rev-parse*",
+  "git worktree list",
+]
+deny = [
+  "rm -rf*",
+  "git push --force*",
+  "git push -f*",
+  "git reset --hard*",
+  "git clean -fd*",
+  "git commit*--no-verify*",
+  "git commit*--amend*",
+  "sudo *",
+  ":(){ :|:& };:",
+  # G13 위반
+  "pip install*",
+  "pip3 install*",
+  "poetry *",
+  "pipenv *",
+  "conda *",
+]
+
+[paths]
+# 사람 승인 없이 수정 금지 (deny-by-default)
+protected = [
+  # Python 빌드/의존성
+  "pyproject.toml",
+  "uv.lock",
+  ".pre-commit-config.yaml",
+  # CI / 게이트
+  ".github/CODEOWNERS",
+  ".github/workflows/**",
+  ".claude/hooks/**",
+  ".codex/config.*.toml",
+  # 정책 SoT
+  "docs/golden-rules.md",
+  "docs/security.md",
+  "docs/reliability.md",
+  "docs/sop/human-approval.md",
+  "docs/plan/**",                  # 대관 계획 — 수정은 ADR 필수
+  # C++ legacy (G7 — 보존)
+  "CMakeLists.txt",
+  "cmake/**",
+  "script/**",
+  ".clang-format",
+  ".travis.yml",
+  "appveyor.yml",
+  "src/lib*/**",
+  "src/app/**",
+  "src/indexer/**",
+  "src/external/**",
+  "src/test/**",
+  "java_indexer/**",
+  "ide_plugins/**",
+  "deployment/**",
+  "setup/**",
+  "bin/**",
+  "testing/**",
+  "docs/documentation/**",
+  "docs/readme/**",
+]
+
+[workflow]
+require_exec_plan_above_loc = 1000
+self_review_before_pr      = true
+attach_quality_score       = true

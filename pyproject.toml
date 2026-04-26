@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sourcetrail-remake"
+version = "0.1.0"
+description = "Python code analysis tool combining Sourcetrail graph concepts with Source Insight UX."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "GPL-3.0-only" }
+authors = [
+  { name = "Sourcetrail_Remake" },
+]
+dependencies = [
+  "PyQt6>=6.7,<7",
+  "PyQt6-QScintilla>=2.14",
+  "jedi>=0.19",
+  "parso>=0.8.4",
+  "rope>=1.13",
+  "rapidfuzz>=3.9",
+  "PyYAML>=6",
+  "nbformat>=5.10",
+  "watchdog>=4",
+  "tree-sitter>=0.23",
+  "tree-sitter-python>=0.23",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-qt>=4.4",
+  "pytest-cov>=5",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "pre-commit>=3.8",
+  "sphinx>=7",
+  "sphinx-rtd-theme>=2",
+]
+
+[project.scripts]
+srm = "sourcetrail_remake.__main__:main"
+srm-index = "sourcetrail_remake.cli.index:main"
+srm-gui = "sourcetrail_remake.cli.gui:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sourcetrail_remake"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["sourcetrail_remake"]
+
+[[tool.mypy.overrides]]
+module = ["jedi", "rope.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+qt_api = "pyqt6"
+addopts = "--strict-markers --cov=sourcetrail_remake --cov-report=term-missing"
+markers = [
+  "unit: fast unit tests",
+  "integration: integration tests",
+  "ui: Qt or UI tests",
+  "compatibility: SourcetrailDB compatibility tests",
+  "performance: performance and benchmark-oriented tests",
+]

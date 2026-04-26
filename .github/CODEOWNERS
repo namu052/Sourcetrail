@@ -1,0 +1,58 @@
+# CODEOWNERS — 사람 승인이 필수인 경로
+# SoT: docs/sop/human-approval.md §1
+#
+# Sourcetrail_Remake는 1인 풀타임 프로젝트라 maintainer 핸들은 placeholder.
+# 실제 운영 시 `@your-handle`로 교체.
+
+# Python 빌드 / 의존성
+/pyproject.toml                @PLACEHOLDER-MAINTAINER
+/uv.lock                       @PLACEHOLDER-MAINTAINER
+/.pre-commit-config.yaml       @PLACEHOLDER-MAINTAINER
+
+# CI / 게이트
+/.github/CODEOWNERS            @PLACEHOLDER-MAINTAINER
+/.github/workflows/            @PLACEHOLDER-MAINTAINER
+/.github/PULL_REQUEST_TEMPLATE.md  @PLACEHOLDER-MAINTAINER
+
+# 하네스 어댑터 권한 / 게이트
+/.claude/hooks/                @PLACEHOLDER-MAINTAINER
+/.codex/config.toml                  @PLACEHOLDER-MAINTAINER
+/.codex/config.balanced.toml         @PLACEHOLDER-MAINTAINER
+/.codex/config.conservative.toml     @PLACEHOLDER-MAINTAINER
+/.codex/config.semi-autonomous.toml  @PLACEHOLDER-MAINTAINER
+
+# 정책 SoT
+/docs/golden-rules.md          @PLACEHOLDER-MAINTAINER
+/docs/security.md              @PLACEHOLDER-MAINTAINER
+/docs/reliability.md           @PLACEHOLDER-MAINTAINER
+/docs/sop/human-approval.md    @PLACEHOLDER-MAINTAINER
+/docs/sop/sourcetrail-compat.md @PLACEHOLDER-MAINTAINER
+
+# 대관 계획 (변경은 ADR 필수)
+/docs/plan/                    @PLACEHOLDER-MAINTAINER
+
+# C++ legacy (G7 — 보존)
+/CMakeLists.txt                @PLACEHOLDER-MAINTAINER
+/cmake/                        @PLACEHOLDER-MAINTAINER
+/script/                       @PLACEHOLDER-MAINTAINER
+/.clang-format                 @PLACEHOLDER-MAINTAINER
+/.travis.yml                   @PLACEHOLDER-MAINTAINER
+/appveyor.yml                  @PLACEHOLDER-MAINTAINER
+/src/lib/                      @PLACEHOLDER-MAINTAINER
+/src/lib_utility/              @PLACEHOLDER-MAINTAINER
+/src/lib_gui/                  @PLACEHOLDER-MAINTAINER
+/src/lib_cxx/                  @PLACEHOLDER-MAINTAINER
+/src/lib_java/                 @PLACEHOLDER-MAINTAINER
+/src/lib_python/               @PLACEHOLDER-MAINTAINER
+/src/app/                      @PLACEHOLDER-MAINTAINER
+/src/indexer/                  @PLACEHOLDER-MAINTAINER
+/src/external/                 @PLACEHOLDER-MAINTAINER
+/src/test/                     @PLACEHOLDER-MAINTAINER
+/java_indexer/                 @PLACEHOLDER-MAINTAINER
+/ide_plugins/                  @PLACEHOLDER-MAINTAINER
+/bin/                          @PLACEHOLDER-MAINTAINER
+/deployment/                   @PLACEHOLDER-MAINTAINER
+/setup/                        @PLACEHOLDER-MAINTAINER
+/testing/                      @PLACEHOLDER-MAINTAINER
+/docs/documentation/           @PLACEHOLDER-MAINTAINER
+/docs/readme/                  @PLACEHOLDER-MAINTAINER

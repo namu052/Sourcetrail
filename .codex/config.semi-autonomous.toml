@@ -1,0 +1,82 @@
+# Codex CLI — Semi-autonomous profile (L3)  [Sourcetrail_Remake / Python]
+# 잘 정의된 task, worktree 격리, 검증 자동화 신뢰 시.
+
+approval_policy = "on-failure"     # 검증 실패 시에만 사람 승인
+sandbox_mode    = "workspace-write"
+network_access  = false             # 의존성 설치는 별도 승인
+auto_confirm    = false
+require_worktree = true             # .claude/worktrees/<task>/ 안에서만
+
+[shell]
+allow = [
+  # 검증
+  "bash scripts/verify-all.sh",
+  "bash scripts/lint.sh*",
+  "bash scripts/type-check.sh",
+  "bash scripts/structure-check.sh",
+  "bash scripts/docs-freshness.sh",
+  "bash scripts/check-adapter-sync.sh",
+  "bash scripts/changed-files.sh",
+  "bash scripts/run-tests.sh*",
+  "bash scripts/compat-check.sh*",
+  "bash scripts/bench.sh*",
+  # uv 실행
+  "uv sync*",
+  "uv add*",
+  "uv run pytest*",
+  "uv run ruff*",
+  "uv run mypy*",
+  "uv run python*",
+  "uv run srm*",
+  # 깃 working
+  "git status",
+  "git diff*",
+  "git log*",
+  "git add*",
+  "git commit -m*",
+  "git push -u origin feature/*",
+  "git worktree*",
+  "gh pr create*",
+  "gh pr view*",
+]
+deny = [
+  "rm -rf /*",
+  "git push --force*",
+  "git push -f*",
+  "git push origin master*",
+  "git push origin main*",
+  "git reset --hard*",
+  "git clean -fd*",
+  "git commit*--no-verify*",
+  "git commit*--amend*",
+  "sudo *",
+  "pip install*", "pip3 install*", "poetry *", "pipenv *", "conda *",
+]
+
+[paths]
+protected = [
+  "pyproject.toml",
+  "uv.lock",
+  ".pre-commit-config.yaml",
+  ".github/CODEOWNERS",
+  ".github/workflows/**",
+  ".claude/hooks/**",
+  ".codex/config.*.toml",
+  "docs/golden-rules.md",
+  "docs/security.md",
+  "docs/reliability.md",
+  "docs/sop/human-approval.md",
+  "docs/plan/**",
+  # C++ legacy
+  "CMakeLists.txt", "cmake/**", "script/**", ".clang-format",
+  ".travis.yml", "appveyor.yml",
+  "src/lib*/**", "src/app/**", "src/indexer/**", "src/external/**", "src/test/**",
+  "java_indexer/**", "ide_plugins/**", "deployment/**", "setup/**", "bin/**", "testing/**",
+  "docs/documentation/**", "docs/readme/**",
+]
+
+[workflow]
+require_exec_plan_above_loc = 500
+self_review_before_pr      = true
+attach_quality_score       = true
+auto_open_pr               = true
