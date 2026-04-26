@@ -133,6 +133,22 @@ PRESET_SPECS: dict[LayoutPreset, LayoutPresetSpec] = {
         ),
         dock_sizes=(220, 360, 360, 360, 280, 120),
     ),
+    LayoutPreset.GRAPH_CENTRIC: LayoutPresetSpec(
+        name=LayoutPreset.GRAPH_CENTRIC,
+        placements=(
+            DockPlacement("graph-overview-dock", Qt.DockWidgetArea.LeftDockWidgetArea, visible=True),
+            DockPlacement(
+                "graph-selection-dock",
+                Qt.DockWidgetArea.RightDockWidgetArea,
+                visible=True,
+            ),
+            DockPlacement("relation-window-dock", Qt.DockWidgetArea.RightDockWidgetArea, True),
+            DockPlacement("context-window-dock", Qt.DockWidgetArea.BottomDockWidgetArea, False),
+            DockPlacement("symbol-window-dock", Qt.DockWidgetArea.BottomDockWidgetArea, False),
+            DockPlacement("graph-log-dock", Qt.DockWidgetArea.BottomDockWidgetArea, visible=True),
+        ),
+        dock_sizes=(180, 260, 320, 120, 120, 220),
+    ),
     LayoutPreset.DEFAULT: LayoutPresetSpec(
         name=LayoutPreset.DEFAULT,
         placements=(
