@@ -180,6 +180,7 @@ Evidence:
 - [`docs/generated/phase2/closeout-evidence.md`](../../generated/phase2/closeout-evidence.md)
 - [`docs/generated/phase2/g3-risk-gate.md`](../../generated/phase2/g3-risk-gate.md)
 - [`docs/generated/phase2/beta-release-draft.md`](../../generated/phase2/beta-release-draft.md)
+- [`docs/generated/phase2/remaining-differences-carryover.md`](../../generated/phase2/remaining-differences-carryover.md)
 
 What went well:
 - D41-D80 execution was completed as day-level commits.

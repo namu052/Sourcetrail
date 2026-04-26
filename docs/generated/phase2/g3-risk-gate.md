@@ -26,6 +26,7 @@ before tagging Beta or explicitly accepted as Phase 3 carry-over by the maintain
 | Sample Django MVP integration | Present via `tests/fixtures/sample-django` |
 
 Primary evidence ledger: [`closeout-evidence.md`](closeout-evidence.md)
+Detailed carry-over ledger: [`remaining-differences-carryover.md`](remaining-differences-carryover.md)
 
 ## Explicit Scope Difference
 
@@ -54,6 +55,11 @@ These items remain outside the conditional G3 pass:
 | Beta tag / GitHub Release | Draft prepared; tag remains blocking | Draft: `docs/generated/phase2/beta-release-draft.md`; proposed tag: `v0.2.0-beta.1` |
 | Original Sourcetrail GUI manual DB-open evidence | Carry-over | Add manual compatibility evidence if required for Beta |
 | 3-panel cursor update timing assertion | Carry-over | Add an end-to-end timing test or manual timing note |
+
+Additional exec-plan wording gaps are tracked in
+[`remaining-differences-carryover.md`](remaining-differences-carryover.md), including graph hover
+preview, Relation Graph/Tree toggle, multi-window Relation lock, closing-block annotation, and exact
+`self`/`cls` scope styling.
 
 ## Gate Decision
 

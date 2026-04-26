@@ -4,6 +4,8 @@ Generated: 2026-04-26
 
 This document records the evidence currently available for the Phase 2 MVP closeout gate.
 G3 disposition is recorded separately in [`g3-risk-gate.md`](g3-risk-gate.md).
+Remaining differences and carry-over items are tracked in
+[`remaining-differences-carryover.md`](remaining-differences-carryover.md).
 
 ## Automated Verification
 
@@ -66,3 +68,4 @@ Implementation and automated test evidence are strong enough to support a Phase 
 Phase 2 should not be marked fully complete until the remaining release evidence is added:
 - Create the beta release tag / published GitHub Release, or record maintainer acceptance of draft-only Beta preparation.
 - Decide whether the 50k LoC Django requirement is mandatory now or explicitly accepted as a Phase 3 carry-over with `sample-django` as the MVP proxy.
+- Resolve or explicitly accept the carry-over ledger in [`remaining-differences-carryover.md`](remaining-differences-carryover.md).
