@@ -197,6 +197,15 @@ class GraphNeighborhood:
 
 
 @dataclass(slots=True, frozen=True)
+class SymbolContext:
+    node: GraphNodeRecord
+    file_path: Path
+    location: SourceLocation
+    source: str
+    breadcrumbs: tuple[GraphNodeRecord, ...]
+
+
+@dataclass(slots=True, frozen=True)
 class IndexResult:
     project_root: Path
     mode: IndexingMode

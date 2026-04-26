@@ -16,6 +16,7 @@ from sourcetrail_remake.core.types import (
     NodeType,
     SourceLocation,
     SourceLocationType,
+    SymbolContext,
 )
 
 
@@ -114,6 +115,46 @@ class DatabaseReader:
             for row in rows
         ]
 
+    def find_context_at(self, file: str | Path, line: int, column: int) -> SymbolContext | None:
+        """Return the best symbol declaration context for a cursor position."""
+        file_path = Path(file).resolve()
+        with sqlite3.connect(self.db_path) as connection:
+            file_row = connection.execute(
+                (
+                    "SELECT file.id, file.path, filecontent.content "
+                    "FROM file "
+                    "LEFT JOIN filecontent ON filecontent.id = file.id "
+                    "WHERE file.path = ? "
+                    "LIMIT 1;"
+                ),
+                (str(file_path),),
+            ).fetchone()
+            if file_row is None:
+                return None
+
+            file_id = int(file_row[0])
+            source = "" if file_row[2] is None else str(file_row[2])
+            symbol_id, location = self._find_context_symbol(connection, file_id, line, column)
+            if symbol_id is None or location is None:
+                return None
+
+            breadcrumb_ids = self._collect_breadcrumb_ids(connection, symbol_id)
+            nodes = {
+                int(node.id): node
+                for node in self._load_nodes(connection, {int(symbol_id), *breadcrumb_ids})
+            }
+            node = nodes.get(int(symbol_id))
+            if node is None:
+                return None
+            breadcrumbs = tuple(nodes[node_id] for node_id in breadcrumb_ids if node_id in nodes)
+            return SymbolContext(
+                node=node,
+                file_path=Path(str(file_row[1])),
+                location=location,
+                source=source,
+                breadcrumbs=breadcrumbs,
+            )
+
     def load_graph(self, symbol_id: NodeId, depth: int) -> GraphNeighborhood:
         with sqlite3.connect(self.db_path) as connection:
             node_ids, edges = self._collect_neighborhood(connection, symbol_id, depth)
@@ -166,6 +207,87 @@ class DatabaseReader:
             frontier = next_frontier
 
         return node_ids, tuple(visited_edges[edge_id] for edge_id in sorted(visited_edges))
+
+    def _find_context_symbol(
+        self,
+        connection: sqlite3.Connection,
+        file_id: int,
+        line: int,
+        column: int,
+    ) -> tuple[NodeId | None, SourceLocation | None]:
+        exact_row = connection.execute(
+            (
+                "SELECT node.id, source_location.start_line, source_location.start_column, "
+                "source_location.end_line, source_location.end_column, source_location.type "
+                "FROM occurrence "
+                "INNER JOIN source_location "
+                "ON source_location.id = occurrence.source_location_id "
+                "INNER JOIN node ON node.id = occurrence.element_id "
+                "INNER JOIN symbol ON symbol.id = node.id "
+                "WHERE source_location.file_node_id = ? "
+                "AND (source_location.start_line < ? "
+                "OR (source_location.start_line = ? AND source_location.start_column <= ?)) "
+                "AND (source_location.end_line > ? "
+                "OR (source_location.end_line = ? AND source_location.end_column >= ?)) "
+                "ORDER BY (source_location.end_line - source_location.start_line) ASC, "
+                "(source_location.end_column - source_location.start_column) ASC, node.id ASC "
+                "LIMIT 1;"
+            ),
+            (file_id, line, line, column, line, line, column),
+        ).fetchone()
+        if exact_row is not None:
+            return self._row_to_context_location(exact_row)
+
+        preceding_row = connection.execute(
+            (
+                "SELECT node.id, source_location.start_line, source_location.start_column, "
+                "source_location.end_line, source_location.end_column, source_location.type "
+                "FROM occurrence "
+                "INNER JOIN source_location "
+                "ON source_location.id = occurrence.source_location_id "
+                "INNER JOIN node ON node.id = occurrence.element_id "
+                "INNER JOIN symbol ON symbol.id = node.id "
+                "WHERE source_location.file_node_id = ? "
+                "AND source_location.start_line <= ? "
+                "ORDER BY source_location.start_line DESC, source_location.start_column DESC "
+                "LIMIT 1;"
+            ),
+            (file_id, line),
+        ).fetchone()
+        if preceding_row is None:
+            return None, None
+        return self._row_to_context_location(preceding_row)
+
+    def _row_to_context_location(
+        self, row: sqlite3.Row | tuple[int, int, int, int, int, int]
+    ) -> tuple[NodeId, SourceLocation]:
+        return (
+            NodeId(int(row[0])),
+            SourceLocation(
+                start_line=int(row[1]),
+                start_column=int(row[2]),
+                end_line=int(row[3]),
+                end_column=int(row[4]),
+                type=SourceLocationType(int(row[5])),
+            ),
+        )
+
+    def _collect_breadcrumb_ids(
+        self, connection: sqlite3.Connection, symbol_id: NodeId
+    ) -> tuple[int, ...]:
+        breadcrumbs: list[int] = []
+        current_id = int(symbol_id)
+        while True:
+            row = connection.execute(
+                "SELECT source_node_id FROM edge WHERE type = ? AND target_node_id = ? LIMIT 1;",
+                (int(EdgeType.EDGE_MEMBER), current_id),
+            ).fetchone()
+            if row is None:
+                break
+            current_id = int(row[0])
+            breadcrumbs.append(current_id)
+        breadcrumbs.reverse()
+        return tuple(breadcrumbs)
 
     def _fetch_connected_edges(
         self,

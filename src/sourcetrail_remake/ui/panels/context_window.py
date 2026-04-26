@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
 )
 
 from sourcetrail_remake.core.event_bus import EventBus
+from sourcetrail_remake.core.types import SymbolContext
 from sourcetrail_remake.db.reader import DatabaseReader
 from sourcetrail_remake.ui.editor.editor import QScintillaEditor
 
@@ -40,7 +41,11 @@ class ContextWindow(QDockWidget):
         """Receive cursor movement events from the editor."""
         self.current_file = file
         self.current_line = line
-        self.status_label.setText(f"{file}:{line}:{col}")
+        context = self.reader.find_context_at(file, line, col)
+        if context is None:
+            self._show_empty_context(file, line, col)
+            return
+        self._show_context(context)
 
     def _build_ui(self) -> None:
         container = QWidget(self)
@@ -74,3 +79,23 @@ class ContextWindow(QDockWidget):
         layout.addWidget(header)
         layout.addWidget(self.preview, stretch=1)
         self.setWidget(container)
+
+    def _show_context(self, context: SymbolContext) -> None:
+        self.current_file = str(context.file_path)
+        self.current_line = context.location.start_line
+        breadcrumb = [item.display_name for item in context.breadcrumbs]
+        breadcrumb.append(context.node.display_name)
+        self.breadcrumb_label.setText(" > ".join(breadcrumb))
+        self.status_label.setText(
+            f"{context.file_path.name}:{context.location.start_line}:"
+            f"{context.location.start_column}"
+        )
+        self.preview.load_text(context.source, path=context.file_path)
+        self.preview.goto_line(context.location.start_line)
+        self.open_button.setEnabled(True)
+
+    def _show_empty_context(self, file: str, line: int, col: int) -> None:
+        self.breadcrumb_label.setText("")
+        self.status_label.setText(f"{file}:{line}:{col}")
+        self.preview.load_text("")
+        self.open_button.setEnabled(False)
