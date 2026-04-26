@@ -110,9 +110,7 @@ class BookmarkStore:
                 "created_at TEXT NOT NULL"
                 ");"
             )
-            connection.execute(
-                "CREATE INDEX IF NOT EXISTS idx_bookmarks_tag ON bookmarks(tag);"
-            )
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_bookmarks_tag ON bookmarks(tag);")
             connection.execute(
                 "CREATE INDEX IF NOT EXISTS idx_bookmarks_file_line ON bookmarks(file, line);"
             )

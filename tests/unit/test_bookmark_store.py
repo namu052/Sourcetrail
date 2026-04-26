@@ -18,10 +18,7 @@ def test_bookmark_store_creates_sqlite_table_and_filters(tmp_path) -> None:
     third_id = store.add("src/other.py", 7, "TODO", "follow up")
 
     with sqlite3.connect(tmp_path / "project-bookmarks.sqlite") as connection:
-        columns = [
-            row[1]
-            for row in connection.execute("PRAGMA table_info(bookmarks);").fetchall()
-        ]
+        columns = [row[1] for row in connection.execute("PRAGMA table_info(bookmarks);").fetchall()]
     assert columns == ["id", "file", "line", "tag", "note", "created_at"]
     assert [bookmark.id for bookmark in store.list_by_tag("TODO")] == [third_id, first_id]
     assert [bookmark.line for bookmark in store.list_by_file("src/app.py")] == [3, 10]
