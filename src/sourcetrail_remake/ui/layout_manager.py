@@ -3,9 +3,34 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 
-from PyQt6.QtCore import QSettings
-from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtCore import QSettings, Qt
+from PyQt6.QtWidgets import QDockWidget, QMainWindow
+
+
+class LayoutPreset(StrEnum):
+    """Built-in dock layout presets."""
+
+    DEFAULT = "default"
+    SOURCE_INSIGHT = "source_insight"
+    WIDE = "wide"
+
+
+@dataclass(frozen=True, slots=True)
+class DockPlacement:
+    """Dock object placement for a preset."""
+
+    object_name: str
+    area: Qt.DockWidgetArea
+
+
+@dataclass(frozen=True, slots=True)
+class LayoutPresetSpec:
+    """Named dock placement preset."""
+
+    name: LayoutPreset
+    placements: tuple[DockPlacement, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +74,12 @@ class LayoutManager:
         state_restored = window.restoreState(snapshot.state)
         return bool(geometry_restored and state_restored)
 
+    def apply_preset(self, window: QMainWindow, preset: LayoutPreset) -> None:
+        for placement in PRESET_SPECS[preset].placements:
+            dock = window.findChild(QDockWidget, placement.object_name)
+            if dock is not None:
+                window.addDockWidget(placement.area, dock)
+
     def load(self, *, name: str = "current") -> LayoutSnapshot:
         self.settings.beginGroup(self.group)
         self.settings.beginGroup(name)
@@ -68,3 +99,32 @@ def _bytes_value(value: object) -> bytes:
         data = value.data()
         return bytes(data)
     return b""
+
+
+PRESET_SPECS: dict[LayoutPreset, LayoutPresetSpec] = {
+    LayoutPreset.DEFAULT: LayoutPresetSpec(
+        name=LayoutPreset.DEFAULT,
+        placements=(
+            DockPlacement("graph-overview-dock", Qt.DockWidgetArea.LeftDockWidgetArea),
+            DockPlacement("graph-selection-dock", Qt.DockWidgetArea.RightDockWidgetArea),
+            DockPlacement("graph-log-dock", Qt.DockWidgetArea.BottomDockWidgetArea),
+        ),
+    ),
+    LayoutPreset.SOURCE_INSIGHT: LayoutPresetSpec(
+        name=LayoutPreset.SOURCE_INSIGHT,
+        placements=(
+            DockPlacement("context-window-dock", Qt.DockWidgetArea.LeftDockWidgetArea),
+            DockPlacement("symbol-window-dock", Qt.DockWidgetArea.RightDockWidgetArea),
+            DockPlacement("relation-window-dock", Qt.DockWidgetArea.RightDockWidgetArea),
+        ),
+    ),
+    LayoutPreset.WIDE: LayoutPresetSpec(
+        name=LayoutPreset.WIDE,
+        placements=(
+            DockPlacement("context-window-dock", Qt.DockWidgetArea.BottomDockWidgetArea),
+            DockPlacement("symbol-window-dock", Qt.DockWidgetArea.LeftDockWidgetArea),
+            DockPlacement("relation-window-dock", Qt.DockWidgetArea.RightDockWidgetArea),
+            DockPlacement("graph-log-dock", Qt.DockWidgetArea.BottomDockWidgetArea),
+        ),
+    ),
+}
