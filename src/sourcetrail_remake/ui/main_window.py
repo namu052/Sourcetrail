@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QDockWidget,
     QHBoxLayout,
@@ -17,9 +18,11 @@ from sourcetrail_remake.core.config import DEFAULT_CONFIG
 from sourcetrail_remake.core.event_bus import EventBus
 from sourcetrail_remake.core.types import GraphNodeRecord, NodeId
 from sourcetrail_remake.db.reader import DatabaseReader
+from sourcetrail_remake.indexer.relation_query import RelationQuery
 from sourcetrail_remake.ui.controls.bookmarks import BookmarkControl
 from sourcetrail_remake.ui.controls.depth import DepthControl
 from sourcetrail_remake.ui.controls.zoom import ZoomControl
+from sourcetrail_remake.ui.dialogs.references import ReferencesDialog
 from sourcetrail_remake.ui.graph.scene import GraphScene
 from sourcetrail_remake.ui.graph.view import GraphView
 from sourcetrail_remake.ui.navigation.history import HistoryNavigator
@@ -46,6 +49,7 @@ class MainWindow(QMainWindow):
         self.home_symbol_id: NodeId | None = initial_symbol_id
         self.history_entries: list[NodeId] = []
         self.history_index = -1
+        self._references_dialog: ReferencesDialog | None = None
         self.graph_scene = GraphScene(reader=reader, event_bus=event_bus)
         self.graph_view = GraphView(self.graph_scene)
         self.setWindowTitle(DEFAULT_CONFIG.main_window_title)
@@ -106,6 +110,8 @@ class MainWindow(QMainWindow):
         self.zoom_control.zoom_out_requested.connect(self.zoom_out)
         self.bookmark_control.bookmark_selected.connect(self._focus_bookmark)
         self.bookmark_control.bookmark_toggled.connect(self._on_bookmark_toggled)
+        self.references_shortcut = QShortcut(QKeySequence("Shift+F12"), self)
+        self.references_shortcut.activated.connect(self.open_references)
 
     def _add_dock(
         self,
@@ -339,6 +345,17 @@ class MainWindow(QMainWindow):
         status_bar = self.statusBar()
         assert status_bar is not None
         status_bar.showMessage("Bookmark added" if added else f"Bookmark removed: {int(node_id)}")
+
+    def open_references(self) -> None:
+        """Open references for the currently focused symbol."""
+        status_bar = self.statusBar()
+        assert status_bar is not None
+        if self.reader is None or self.current_symbol_id is None:
+            status_bar.showMessage("No symbol selected")
+            return
+        occurrences = RelationQuery(self.reader.db_path).get_references(self.current_symbol_id)
+        self._references_dialog = ReferencesDialog(occurrences, self)
+        self._references_dialog.show()
 
 
 def create_main_window(

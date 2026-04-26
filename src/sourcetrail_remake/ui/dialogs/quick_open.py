@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import QModelIndex, QSettings, QTimer, Qt, pyqtSignal
+from PyQt6.QtCore import QModelIndex, QSettings, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from PyQt6.QtWidgets import QDialog, QLineEdit, QListView, QVBoxLayout, QWidget
 
-from sourcetrail_remake.core.types import NodeId
 from sourcetrail_remake.search.fuzzy import FuzzyResult, SymbolFuzzyIndex
 
 ROLE_NODE_ID = int(Qt.ItemDataRole.UserRole)
