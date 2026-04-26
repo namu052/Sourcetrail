@@ -27,6 +27,7 @@ class ContextWindow(QDockWidget):
         self.reader = reader
         self.current_file = ""
         self.current_line = 0
+        self._recent_contexts: list[str] = []
         self._pending_cursor: tuple[str, int, int] | None = None
         self._update_timer = QTimer(self)
         self._update_timer.setSingleShot(True)
@@ -101,9 +102,11 @@ class ContextWindow(QDockWidget):
     def _show_context(self, context: SymbolContext) -> None:
         self.current_file = str(context.file_path)
         self.current_line = context.location.start_line
-        breadcrumb = [item.display_name for item in context.breadcrumbs]
-        breadcrumb.append(context.node.display_name)
-        self.breadcrumb_label.setText(" > ".join(breadcrumb))
+        hierarchy = [item.display_name for item in context.breadcrumbs]
+        hierarchy.append(context.node.display_name)
+        self._push_recent_context(context.node.display_name)
+        self.breadcrumb_label.setText(" > ".join(self._recent_contexts))
+        self.breadcrumb_label.setToolTip(" > ".join(hierarchy))
         self.status_label.setText(
             f"{context.file_path.name}:{context.location.start_line}:"
             f"{context.location.start_column}"
@@ -128,3 +131,9 @@ class ContextWindow(QDockWidget):
         if not self.current_file or self.current_line <= 0:
             return
         self.event_bus.file_opened.emit(self.current_file, self.current_line)
+
+    def _push_recent_context(self, display_name: str) -> None:
+        if self._recent_contexts and self._recent_contexts[-1] == display_name:
+            return
+        self._recent_contexts.append(display_name)
+        self._recent_contexts = self._recent_contexts[-5:]
