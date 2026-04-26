@@ -26,6 +26,24 @@ def test_symbol_fuzzy_index_builds_flat_symbol_catalog(tmp_path: Path) -> None:
     ]
 
 
+@pytest.mark.unit
+def test_symbol_fuzzy_index_ranks_exact_prefix_then_fuzzy(tmp_path: Path) -> None:
+    db_path, _ids = _build_symbol_db(tmp_path)
+    index = SymbolFuzzyIndex()
+    index.build(DatabaseReader(db_path))
+
+    exact = index.search("SessionManager")
+    prefix = index.search("build")
+    fuzzy = index.search("sessm")
+
+    assert exact[0].symbol.fqn == "sample.SessionManager"
+    assert exact[0].match_kind == "exact"
+    assert prefix[0].symbol.fqn == "sample.build_session"
+    assert prefix[0].match_kind == "prefix"
+    assert fuzzy[0].symbol.fqn == "sample.SessionManager"
+    assert fuzzy[0].match_kind == "fuzzy"
+
+
 def _build_symbol_db(tmp_path: Path):
     source_path = tmp_path / "sample.py"
     source_path.write_text(
