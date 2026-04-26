@@ -17,6 +17,7 @@ from rope.base.resources import File
 from rope.refactor.rename import Rename
 
 from sourcetrail_remake.core.types import NodeId
+from sourcetrail_remake.refactor.undo import UndoEntry, UndoJournal, UndoRecord
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,6 +72,7 @@ class RenameResult:
     old_name: str
     new_name: str
     changed_files: tuple[Path, ...]
+    undo_record: UndoRecord | None = None
 
 
 class RopeRenameService:
@@ -85,6 +87,7 @@ class RopeRenameService:
         self.project_root = Path(project_root).resolve()
         self.db_path = None if db_path is None else Path(db_path).resolve()
         self.reindex_callback = reindex_callback
+        self.undo_journal = UndoJournal(self.project_root)
 
     def open_project(self) -> Project:
         """Return a Rope project rooted at the indexed project directory."""
@@ -123,6 +126,9 @@ class RopeRenameService:
 
     def apply(self, preview: RenamePreview) -> RenameResult:
         """Write previewed file contents and request index refresh."""
+        undo_record = self.undo_journal.backup(
+            tuple(UndoEntry(path=change.path, old_text=change.old_text) for change in preview.changes)
+        )
         for change in preview.changes:
             change.path.write_text(change.new_text, encoding="utf-8")
 
@@ -134,7 +140,14 @@ class RopeRenameService:
             old_name=preview.old_name,
             new_name=preview.new_name,
             changed_files=changed_files,
+            undo_record=undo_record,
         )
+
+    def undo(self, result: RenameResult) -> None:
+        """Restore files captured before apply."""
+        if result.undo_record is None:
+            raise ValueError("rename result has no undo record")
+        self.undo_journal.restore(result.undo_record)
 
     def _load_target(self, node_id: NodeId) -> RenameTarget:
         assert self.db_path is not None
