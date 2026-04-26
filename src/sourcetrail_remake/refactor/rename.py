@@ -132,8 +132,7 @@ class RopeRenameService:
         """Write previewed file contents and request index refresh."""
         undo_record = self.undo_journal.backup(
             tuple(
-                UndoEntry(path=change.path, old_text=change.old_text)
-                for change in preview.changes
+                UndoEntry(path=change.path, old_text=change.old_text) for change in preview.changes
             )
         )
         try:
