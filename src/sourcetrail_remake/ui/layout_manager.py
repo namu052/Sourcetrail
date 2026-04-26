@@ -12,6 +12,10 @@ from PyQt6.QtWidgets import QDockWidget, QMainWindow
 class LayoutPreset(StrEnum):
     """Built-in dock layout presets."""
 
+    READING = "reading"
+    GRAPH_CENTRIC = "graph_centric"
+    REFACTOR = "refactor"
+    CUSTOM = "custom"
     DEFAULT = "default"
     SOURCE_INSIGHT = "source_insight"
     WIDE = "wide"
@@ -23,6 +27,7 @@ class DockPlacement:
 
     object_name: str
     area: Qt.DockWidgetArea
+    visible: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,6 +36,7 @@ class LayoutPresetSpec:
 
     name: LayoutPreset
     placements: tuple[DockPlacement, ...]
+    dock_sizes: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,6 +85,8 @@ class LayoutManager:
             dock = window.findChild(QDockWidget, placement.object_name)
             if dock is not None:
                 window.addDockWidget(placement.area, dock)
+                dock.setVisible(placement.visible)
+        self._resize_matching_docks(window, PRESET_SPECS[preset])
 
     def load(self, *, name: str = "current") -> LayoutSnapshot:
         self.settings.beginGroup(self.group)
@@ -88,6 +96,18 @@ class LayoutManager:
         self.settings.endGroup()
         self.settings.endGroup()
         return LayoutSnapshot(geometry=geometry, state=state)
+
+    def _resize_matching_docks(self, window: QMainWindow, spec: LayoutPresetSpec) -> None:
+        if not spec.dock_sizes:
+            return
+        docks = [
+            dock
+            for placement in spec.placements
+            if (dock := window.findChild(QDockWidget, placement.object_name)) is not None
+        ]
+        if len(docks) != len(spec.dock_sizes):
+            return
+        window.resizeDocks(docks, list(spec.dock_sizes), Qt.Orientation.Horizontal)
 
 
 def _bytes_value(value: object) -> bytes:
@@ -101,6 +121,18 @@ def _bytes_value(value: object) -> bytes:
 
 
 PRESET_SPECS: dict[LayoutPreset, LayoutPresetSpec] = {
+    LayoutPreset.READING: LayoutPresetSpec(
+        name=LayoutPreset.READING,
+        placements=(
+            DockPlacement("graph-overview-dock", Qt.DockWidgetArea.LeftDockWidgetArea),
+            DockPlacement("context-window-dock", Qt.DockWidgetArea.RightDockWidgetArea),
+            DockPlacement("symbol-window-dock", Qt.DockWidgetArea.RightDockWidgetArea),
+            DockPlacement("relation-window-dock", Qt.DockWidgetArea.RightDockWidgetArea),
+            DockPlacement("graph-selection-dock", Qt.DockWidgetArea.RightDockWidgetArea),
+            DockPlacement("graph-log-dock", Qt.DockWidgetArea.BottomDockWidgetArea, visible=False),
+        ),
+        dock_sizes=(220, 360, 360, 360, 280, 120),
+    ),
     LayoutPreset.DEFAULT: LayoutPresetSpec(
         name=LayoutPreset.DEFAULT,
         placements=(
