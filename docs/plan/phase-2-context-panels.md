@@ -253,7 +253,7 @@ Evidence ledger: [`docs/generated/phase2/closeout-evidence.md`](../generated/pha
 - [x] 단위 테스트 커버리지 75%
   - Evidence: `bash scripts/run-tests.sh` reports 77 passed and 90% total coverage.
 - [ ] **Beta 릴리스 태그** (외부 공개, GitHub Release)
-  - No beta tag or GitHub Release evidence yet. Existing release tag evidence stops at `v0.1.0-alpha.1`.
+  - Draft prepared: [`docs/generated/phase2/beta-release-draft.md`](../generated/phase2/beta-release-draft.md). Proposed tag: `v0.2.0-beta.1`. Tag not created; existing release tag evidence stops at `v0.1.0-alpha.1`.
 - [ ] **리스크 게이트 G3 통과**: MVP 완성
   - Pending G3 disposition after Beta release and the full-scale Django/dogfooding decision.
 

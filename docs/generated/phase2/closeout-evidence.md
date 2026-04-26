@@ -38,7 +38,7 @@ All planned D41-D80 day commits are present in git history.
 | Unused variable and deprecated call decoration on/off | Verified by automated tests | `tests/ui/test_preferences_dialog.py`, `tests/integration/test_semantic_decoration_flow.py`, `tests/unit/test_week15_semantic_coverage.py` |
 | Django project MVP scenario | Partially verified | `tests/integration/test_phase2_mvp_django_flow.py` covers `tests/fixtures/sample-django`. This is not a 50k LoC Django project. |
 | Unit test coverage target | Verified | `bash scripts/run-tests.sh` reports 90% total coverage. |
-| Beta release tag / GitHub Release | Not evidenced | Existing tags include `v0.1.0-alpha.1`; no beta tag or GitHub Release draft evidence was found. |
+| Beta release tag / GitHub Release | Draft prepared, tag not created | `docs/generated/phase2/beta-release-draft.md`; existing tags include `v0.1.0-alpha.1`; no beta tag exists yet. |
 | G3 risk gate passed | Conditional pass recorded | `docs/generated/phase2/g3-risk-gate.md`; release-scale evidence remains pending. |
 
 ## MVP Scenario Coverage
@@ -53,7 +53,7 @@ The planned 15-item MVP scenario from `docs/plan/phase-2-context-panels.md` is c
 | Semantic decorations | Verified | Week 15 analyzer and semantic decoration tests |
 | Original Sourcetrail DB compatibility | Partially verified | `tests/compatibility/test_schema_tables.py`; no original GUI manual-open evidence in this closeout ledger |
 | 50k LoC Django dogfooding | Not evidenced | Current automated coverage uses `tests/fixtures/sample-django` |
-| Beta release publication | Not evidenced | No beta tag or GitHub Release evidence |
+| Beta release publication | Draft prepared, tag not created | `docs/generated/phase2/beta-release-draft.md`; no beta tag or published GitHub Release evidence |
 
 ## Closeout Assessment
 
@@ -64,5 +64,5 @@ Implementation and automated test evidence are strong enough to support a Phase 
 - Coverage target is exceeded.
 
 Phase 2 should not be marked fully complete until the remaining release evidence is added:
-- Create or document the beta release tag / GitHub Release draft.
+- Create the beta release tag / published GitHub Release, or record maintainer acceptance of draft-only Beta preparation.
 - Decide whether the 50k LoC Django requirement is mandatory now or explicitly accepted as a Phase 3 carry-over with `sample-django` as the MVP proxy.

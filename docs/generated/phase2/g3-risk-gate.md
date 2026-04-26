@@ -51,7 +51,7 @@ These items remain outside the conditional G3 pass:
 |---|---|---|
 | 50k LoC Django dogfooding | Carry-over | Run and record full-scale dogfooding, or formally waive for Beta |
 | 15-scenario manual MVP pass sheet | Carry-over | Add scenario-by-scenario pass evidence |
-| Beta tag / GitHub Release | Blocking release task | Create beta release draft and tag, e.g. `v0.2.0-beta.1` |
+| Beta tag / GitHub Release | Draft prepared; tag remains blocking | Draft: `docs/generated/phase2/beta-release-draft.md`; proposed tag: `v0.2.0-beta.1` |
 | Original Sourcetrail GUI manual DB-open evidence | Carry-over | Add manual compatibility evidence if required for Beta |
 | 3-panel cursor update timing assertion | Carry-over | Add an end-to-end timing test or manual timing note |
 

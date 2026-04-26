@@ -158,7 +158,7 @@ Evidence ledger: [`docs/generated/phase2/closeout-evidence.md`](../../generated/
 - [ ] **자가 호스팅 dogfooding 시나리오 6종 전부 통과**
   - Partial evidence: sample Django MVP integration passes. Full Sourcetrail_Remake self-analysis dogfooding is not evidenced.
 - [ ] Beta 릴리스 (GitHub Release + 내부 공개)
-  - No beta tag or GitHub Release evidence yet.
+  - Draft prepared: [`docs/generated/phase2/beta-release-draft.md`](../../generated/phase2/beta-release-draft.md). Proposed tag: `v0.2.0-beta.1`. Tag not created.
 - [x] 테스트 커버리지 80% 달성
   - Evidence: `bash scripts/run-tests.sh` reports 77 passed and 90% total coverage.
 
