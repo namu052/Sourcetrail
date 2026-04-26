@@ -30,7 +30,7 @@ last_updated: 2026-04-25
 |-------|------|------|------|-------------|
 | [Phase 0](phase-0-setup-and-poc.md) | 2주 | 2주 | 셋업 & PoC | 레포/CI/PoC 3종 |
 | [Phase 1](phase-1-mvp-core.md) | 6주 | 8주 | MVP Core | 인덱서 + 그래프 뷰 |
-| [Phase 2](phase-2-source-insight-panels.md) | 8주 | **16주 (MVP)** | SI 핵심 패널 | Context / Symbol / Relation / Editor |
+| [Phase 2](../completed/phase-2-source-insight-panels.md) | 8주 | **16주 (MVP)** | SI 핵심 패널 | Context / Symbol / Relation / Editor |
 | [Phase 3](phase-3-editor-productivity.md) | 6주 | 22주 | 에디터 강화 | Rename / Search / Layouts |
 | [Phase 4](phase-4-python-specialization.md) | 6주 | 28주 | Python 특화 | TypeHint / Django / Jupyter |
 | [Phase 5](phase-5-polish-and-packaging.md) | 3주 | 31주 | 완성도 & 패키징 | 테마 / Export / 인스톨러 |

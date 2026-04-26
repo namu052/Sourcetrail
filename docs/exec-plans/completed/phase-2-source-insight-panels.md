@@ -1,7 +1,7 @@
 ---
 title: Phase 2 Source Insight Panels
-status: Active
-last_updated: 2026-04-25
+status: Completed
+last_updated: 2026-04-26
 ---
 
 # Phase 2 — Source Insight 핵심 패널 (MVP 종료점)
@@ -173,6 +173,36 @@ Evidence ledger: [`docs/generated/phase2/closeout-evidence.md`](../../generated/
 | 닫는 블록 annotation 오렌더 | QScintilla margin annotation API 우선 시도, 실패 시 inline annotation |
 
 ## 회고 (Phase 종료 후 작성)
+
+## Phase 2 Closeout Retrospective (2026-04-26)
+
+Evidence:
+- [`docs/generated/phase2/closeout-evidence.md`](../../generated/phase2/closeout-evidence.md)
+- [`docs/generated/phase2/g3-risk-gate.md`](../../generated/phase2/g3-risk-gate.md)
+- [`docs/generated/phase2/beta-release-draft.md`](../../generated/phase2/beta-release-draft.md)
+
+What went well:
+- D41-D80 execution was completed as day-level commits.
+- `bash scripts/verify-all.sh` passed.
+- `bash scripts/run-tests.sh` passed with 77 tests and 90% total coverage.
+- Context, Symbol, Relation, and syntax/editor decoration surfaces have automated evidence.
+
+Difficulties:
+- Phase 2 evidence differs between the plan DoD and the active exec-plan wording, so closeout must distinguish completed MVP surfaces from broader unevidenced claims.
+- The validated Django target is `tests/fixtures/sample-django`, not a real 50k LoC Django project.
+- The beta tag was not created because release tags are maintainer-controlled by repo policy.
+
+Carry-over:
+- Run or formally waive real 50k LoC Django dogfooding.
+- Capture a 15-scenario manual pass sheet if required for final G3 signoff.
+- Publish the beta tag and GitHub Release after maintainer approval.
+- Capture original Sourcetrail GUI open/read compatibility evidence if required.
+- Add a 3-panel cursor timing assertion.
+- Resolve exec-plan-only gaps: graph hover preview, Graph/Tree relation toggle, multi Relation window lock, closing-block annotation, and exact `self`/`cls` scope styling.
+
+Timeline:
+- Planned window: Week 9-16.
+- Actual closeout state: D41-D80 implemented, G3 recorded as Conditional Pass, and beta release draft prepared by 2026-04-26.
 
 - 잘 된 점:
 - 어려웠던 점:
