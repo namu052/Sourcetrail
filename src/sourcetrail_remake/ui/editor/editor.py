@@ -8,6 +8,14 @@ from PyQt6.Qsci import QsciLexerPython, QsciScintilla
 from PyQt6.QtCore import QTimer, pyqtSignal
 from PyQt6.QtGui import QColor, QFont
 
+EDITOR_FONT_FAMILY = "Consolas"
+EDITOR_FONT_SIZE = 10
+EDITOR_BACKGROUND = "#ffffff"
+EDITOR_FOREGROUND = "#1f2328"
+EDITOR_MARGIN_BACKGROUND = "#f6f8fa"
+EDITOR_MARGIN_FOREGROUND = "#57606a"
+EDITOR_CARET_LINE = "#eef6ff"
+
 
 class QScintillaEditor(QsciScintilla):
     """Configured Python editor that emits debounced cursor positions."""
@@ -54,14 +62,20 @@ class QScintillaEditor(QsciScintilla):
 
     def _configure_base_editor(self) -> None:
         self.setUtf8(True)
-        self.setLexer(QsciLexerPython(self))
-        self.setMarginsFont(QFont("Consolas", 10))
+        lexer = QsciLexerPython(self)
+        configure_python_lexer(lexer)
+        self.setLexer(lexer)
+        self.setMarginsFont(QFont(EDITOR_FONT_FAMILY, EDITOR_FONT_SIZE))
         self.setMarginWidth(0, "0000")
         self.setMarginLineNumbers(0, True)
+        self.setMarginsBackgroundColor(QColor(EDITOR_MARGIN_BACKGROUND))
+        self.setMarginsForegroundColor(QColor(EDITOR_MARGIN_FOREGROUND))
         self.setFolding(QsciScintilla.FoldStyle.PlainFoldStyle)
         self.setCaretLineVisible(True)
-        self.setCaretLineBackgroundColor(QColor("#f4f4f4"))
+        self.setCaretLineBackgroundColor(QColor(EDITOR_CARET_LINE))
         self.setBraceMatching(QsciScintilla.BraceMatch.StrictBraceMatch)
+        self.setPaper(QColor(EDITOR_BACKGROUND))
+        self.setColor(QColor(EDITOR_FOREGROUND))
 
     def _schedule_cursor_moved(self, _line: int, _index: int) -> None:
         self._debounce_timer.start()
@@ -71,3 +85,21 @@ class QScintillaEditor(QsciScintilla):
             return
         line, column = self.getCursorPosition()
         self.cursor_moved.emit(str(self._path), line + 1, column)
+
+
+def configure_python_lexer(lexer: QsciLexerPython) -> None:
+    """Apply the shared Python syntax palette."""
+    base_font = QFont(EDITOR_FONT_FAMILY, EDITOR_FONT_SIZE)
+    lexer.setDefaultFont(base_font)
+    lexer.setDefaultPaper(QColor(EDITOR_BACKGROUND))
+    lexer.setDefaultColor(QColor(EDITOR_FOREGROUND))
+    lexer.setFont(base_font)
+    lexer.setColor(QColor("#0550ae"), QsciLexerPython.Keyword)
+    lexer.setColor(QColor("#8250df"), QsciLexerPython.ClassName)
+    lexer.setColor(QColor("#6639ba"), QsciLexerPython.FunctionMethodName)
+    lexer.setColor(QColor("#0a3069"), QsciLexerPython.DoubleQuotedString)
+    lexer.setColor(QColor("#0a3069"), QsciLexerPython.SingleQuotedString)
+    lexer.setColor(QColor("#116329"), QsciLexerPython.Comment)
+    lexer.setColor(QColor("#953800"), QsciLexerPython.Number)
+    lexer.setColor(QColor("#24292f"), QsciLexerPython.Identifier)
+    lexer.setColor(QColor("#6e7781"), QsciLexerPython.Operator)
