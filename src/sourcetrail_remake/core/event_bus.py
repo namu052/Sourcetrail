@@ -8,13 +8,13 @@ from PyQt6.QtCore import QObject, pyqtSignal
 class EventBus(QObject):
     """Central signal bus for the Phase 0 shell."""
 
-    symbol_selected = pyqtSignal(object)
+    symbol_selected = pyqtSignal(int)
     symbol_hovered = pyqtSignal(object)
     symbol_deselected = pyqtSignal()
 
-    file_opened = pyqtSignal(object)
+    file_opened = pyqtSignal(str, int)
     file_closed = pyqtSignal(object)
-    cursor_moved = pyqtSignal(object, int, int)
+    cursor_moved = pyqtSignal(str, int, int)
 
     indexing_started = pyqtSignal(object)
     indexing_progress = pyqtSignal(int, int)
