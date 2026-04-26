@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import QByteArray, Qt, pyqtSignal
 from PyQt6.QtGui import QDragEnterEvent, QDropEvent
 from PyQt6.QtWidgets import (
     QListWidget,
@@ -96,21 +96,33 @@ class ClipWindow(QWidget):
         self.refresh()
         return count
 
-    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
+    def dragEnterEvent(self, event: QDragEnterEvent | None) -> None:
+        if event is None:
+            return
         mime = event.mimeData()
+        if mime is None:
+            return
         if mime.hasFormat(CLIP_MIME_TYPE) or mime.hasText():
             event.acceptProposedAction()
 
-    def dropEvent(self, event: QDropEvent) -> None:
+    def dropEvent(self, event: QDropEvent | None) -> None:
+        if event is None:
+            return
         mime = event.mimeData()
+        if mime is None:
+            return
         if mime.hasFormat(CLIP_MIME_TYPE):
-            text = bytes(mime.data(CLIP_MIME_TYPE)).decode("utf-8")
+            data = mime.data(CLIP_MIME_TYPE)
+            text = self._decode_mime_data(data)
         elif mime.hasText():
             text = mime.text()
         else:
             return
         self.add_clip_from_mime(text)
         event.acceptProposedAction()
+
+    def _decode_mime_data(self, data: QByteArray) -> str:
+        return data.data().decode("utf-8")
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)

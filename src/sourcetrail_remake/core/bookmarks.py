@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -45,9 +46,12 @@ class BookmarkStore:
                 (file, line, tag.strip(), note.strip(), created_at),
             )
             connection.commit()
-            return BookmarkId(int(cursor.lastrowid))
+            row_id = cursor.lastrowid
+            if row_id is None:
+                raise RuntimeError("bookmark insert did not return a row id")
+            return BookmarkId(row_id)
 
-    def list(self) -> list[Bookmark]:
+    def list(self) -> builtins.list[Bookmark]:
         """Return all bookmarks sorted by creation order."""
         with self._connect() as connection:
             rows = connection.execute(
@@ -56,7 +60,7 @@ class BookmarkStore:
             ).fetchall()
         return [self._row_to_bookmark(row) for row in rows]
 
-    def list_by_tag(self, tag: str) -> list[Bookmark]:
+    def list_by_tag(self, tag: str) -> builtins.list[Bookmark]:
         """Return bookmarks whose tag exactly matches ``tag``."""
         with self._connect() as connection:
             rows = connection.execute(
@@ -68,7 +72,7 @@ class BookmarkStore:
             ).fetchall()
         return [self._row_to_bookmark(row) for row in rows]
 
-    def list_by_file(self, file: str) -> list[Bookmark]:
+    def list_by_file(self, file: str) -> builtins.list[Bookmark]:
         """Return bookmarks for a source file sorted by line."""
         with self._connect() as connection:
             rows = connection.execute(
@@ -117,11 +121,11 @@ class BookmarkStore:
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self.db_path)
 
-    def _row_to_bookmark(self, row: sqlite3.Row | tuple[object, ...]) -> Bookmark:
+    def _row_to_bookmark(self, row: sqlite3.Row) -> Bookmark:
         return Bookmark(
-            id=BookmarkId(int(row[0])),
+            id=BookmarkId(int(str(row[0]))),
             file=str(row[1]),
-            line=int(row[2]),
+            line=int(str(row[2])),
             tag=str(row[3]),
             note=str(row[4]),
             created_at=str(row[5]),
