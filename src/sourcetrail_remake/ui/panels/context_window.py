@@ -39,6 +39,7 @@ class ContextWindow(QDockWidget):
             | QDockWidget.DockWidgetFeature.DockWidgetFloatable
         )
         self._build_ui()
+        self.open_button.clicked.connect(self._open_current_source)
         self.event_bus.cursor_moved.connect(self.on_cursor_moved)
 
     @pyqtSlot(str, int, int)
@@ -122,3 +123,8 @@ class ContextWindow(QDockWidget):
         self.status_label.setText(f"{file}:{line}:{col}")
         self.preview.load_text("")
         self.open_button.setEnabled(False)
+
+    def _open_current_source(self) -> None:
+        if not self.current_file or self.current_line <= 0:
+            return
+        self.event_bus.file_opened.emit(self.current_file, self.current_line)
