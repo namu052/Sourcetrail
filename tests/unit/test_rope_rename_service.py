@@ -15,7 +15,15 @@ from sourcetrail_remake.refactor.rename import RopeRenameService
 @pytest.mark.parametrize(
     ("source", "name", "node_type", "line", "column", "new_name", "expected"),
     [
-        ("value = 1\nprint(value)\n", "value", NodeType.NODE_GLOBAL_VARIABLE, 1, 0, "total", "total"),
+        (
+            "value = 1\nprint(value)\n",
+            "value",
+            NodeType.NODE_GLOBAL_VARIABLE,
+            1,
+            0,
+            "total",
+            "total",
+        ),
         (
             "def greet():\n    return 1\n\nanswer = greet()\n",
             "greet",

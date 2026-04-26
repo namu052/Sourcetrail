@@ -59,7 +59,7 @@ strict = true
 packages = ["sourcetrail_remake"]
 
 [[tool.mypy.overrides]]
-module = ["jedi"]
+module = ["jedi", "rope.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

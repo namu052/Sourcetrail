@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import ast
-from collections.abc import Callable
-from dataclasses import dataclass
 import difflib
 import keyword
-from pathlib import Path
 import sqlite3
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from rope.base.change import Change, ChangeContents, ChangeSet
@@ -131,7 +131,10 @@ class RopeRenameService:
     def apply(self, preview: RenamePreview) -> RenameResult:
         """Write previewed file contents and request index refresh."""
         undo_record = self.undo_journal.backup(
-            tuple(UndoEntry(path=change.path, old_text=change.old_text) for change in preview.changes)
+            tuple(
+                UndoEntry(path=change.path, old_text=change.old_text)
+                for change in preview.changes
+            )
         )
         try:
             for change in preview.changes:
@@ -298,13 +301,21 @@ def _bound_names(node: ast.AST) -> list[tuple[str, ast.AST]]:
         return [(node.name, node)]
     if isinstance(node, ast.Assign | ast.AnnAssign):
         targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-        return [
-            (target.id, target)
-            for target in ast.walk(ast.Module(body=targets, type_ignores=[]))
-            if isinstance(target, ast.Name) and isinstance(target.ctx, ast.Store)
-        ]
+        return _target_names(targets)
     if isinstance(node, ast.arg):
         return [(node.arg, node)]
     if isinstance(node, ast.Import | ast.ImportFrom):
-        return [(alias.asname or alias.name.split(".", maxsplit=1)[0], node) for alias in node.names]
+        return [
+            (alias.asname or alias.name.split(".", maxsplit=1)[0], node) for alias in node.names
+        ]
     return []
+
+
+def _target_names(targets: Sequence[ast.expr]) -> list[tuple[str, ast.AST]]:
+    names: list[tuple[str, ast.AST]] = []
+    for target in targets:
+        if isinstance(target, ast.Name) and isinstance(target.ctx, ast.Store):
+            names.append((target.id, target))
+        elif isinstance(target, ast.Tuple | ast.List):
+            names.extend(_target_names(list(target.elts)))
+    return names
