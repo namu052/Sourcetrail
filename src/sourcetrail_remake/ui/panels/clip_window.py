@@ -86,6 +86,16 @@ class ClipWindow(QWidget):
             }
         )
 
+    def export_to_json(self, path: str) -> None:
+        """Export all clips to ``path`` and keep the panel state unchanged."""
+        self.store.export_json(path)
+
+    def import_from_json(self, path: str, *, replace: bool = False) -> int:
+        """Import clips from ``path`` and refresh the panel."""
+        count = self.store.import_json(path, replace=replace)
+        self.refresh()
+        return count
+
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         mime = event.mimeData()
         if mime.hasFormat(CLIP_MIME_TYPE) or mime.hasText():

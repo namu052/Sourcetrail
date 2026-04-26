@@ -39,3 +39,18 @@ def test_clip_window_accepts_custom_mime_payload(qtbot, tmp_path) -> None:
     assert clip.title == "Dragged"
     assert clip.text == "print(1)"
     assert clip.tags == ("TODO",)
+
+
+@pytest.mark.ui
+def test_clip_window_imports_and_exports_json(qtbot, tmp_path) -> None:
+    source = ClipWindow(ClipStore(tmp_path / "source.srm-clips"))
+    qtbot.addWidget(source)
+    source.add_clip("Exported", "value = 2")
+    export_path = tmp_path / "clips.json"
+
+    source.export_to_json(str(export_path))
+    target = ClipWindow(ClipStore(tmp_path / "target.srm-clips"))
+    qtbot.addWidget(target)
+
+    assert target.import_from_json(str(export_path)) == 1
+    assert target.findChild(QListWidget, "clip-list").count() == 1

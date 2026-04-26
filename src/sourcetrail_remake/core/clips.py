@@ -72,12 +72,37 @@ class ClipStore:
         self._clips.pop(clip_id, None)
         self._save()
 
+    def export_json(self, path: Path | str) -> None:
+        """Export the current clip collection to a JSON file."""
+        export_path = Path(path)
+        export_path.parent.mkdir(parents=True, exist_ok=True)
+        export_path.write_text(json.dumps(self._payload(), indent=2), encoding="utf-8")
+
+    def import_json(self, path: Path | str, *, replace: bool = False) -> int:
+        """Import clips from a JSON file and return the number of stored clips."""
+        import_path = Path(path)
+        data = json.loads(import_path.read_text(encoding="utf-8"))
+        imported = self._clips_from_payload(data)
+        if replace:
+            self._clips = imported
+        else:
+            self._clips.update(imported)
+        self._save()
+        return len(imported)
+
     def _load(self) -> dict[ClipId, Clip]:
         if not self.path.exists():
             return {}
         data = json.loads(self.path.read_text(encoding="utf-8"))
+        return self._clips_from_payload(data)
+
+    def _clips_from_payload(self, data: object) -> dict[ClipId, Clip]:
+        if not isinstance(data, dict):
+            raise ValueError("clip JSON must be an object")
         clips: dict[ClipId, Clip] = {}
         for raw in data.get("clips", []):
+            if not isinstance(raw, dict):
+                raise ValueError("clip entry must be an object")
             clip = Clip(
                 id=ClipId(str(raw["id"])),
                 title=str(raw["title"]),
@@ -90,14 +115,16 @@ class ClipStore:
         return clips
 
     def _save(self) -> None:
-        payload = {
+        self.path.write_text(json.dumps(self._payload(), indent=2), encoding="utf-8")
+
+    def _payload(self) -> dict[str, object]:
+        return {
             "version": 1,
             "clips": [
                 {**asdict(clip), "id": str(clip.id), "tags": list(clip.tags)}
                 for clip in self.list()
             ],
         }
-        self.path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
     def _fallback_title(self, text: str) -> str:
         first_line = next((line.strip() for line in text.splitlines() if line.strip()), "")
