@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass
 import difflib
+import keyword
 from pathlib import Path
 import sqlite3
 from typing import Any
@@ -46,7 +48,18 @@ class RenamePreview:
     new_name: str
     affected_files: tuple[Path, ...]
     changes: tuple[FileChange, ...]
+    conflicts: tuple[ScopeConflict, ...]
     rope_changes: ChangeSet
+
+
+@dataclass(frozen=True, slots=True)
+class ScopeConflict:
+    """A rename warning for a same-scope symbol collision or invalid target name."""
+
+    path: Path
+    line: int
+    column: int
+    message: str
 
 
 class RopeRenameService:
@@ -70,6 +83,7 @@ class RopeRenameService:
         """Compute affected files and per-file diffs for a node rename."""
         if self.db_path is None:
             raise ValueError("db_path is required for node-based rename preview")
+        input_conflicts = self._validate_new_name(new_name)
 
         target = self._load_target(node_id)
         project = self.open_project()
@@ -84,6 +98,7 @@ class RopeRenameService:
                 new_name=new_name,
                 affected_files=tuple(change.path for change in file_changes),
                 changes=file_changes,
+                conflicts=(*input_conflicts, *self._scope_conflicts(file_changes, new_name)),
                 rope_changes=rope_changes,
             )
         finally:
@@ -161,6 +176,82 @@ class RopeRenameService:
             raise ValueError(f"line {line} is outside {file_path}")
         return sum(len(item) for item in lines[: line - 1]) + column
 
+    def _validate_new_name(self, new_name: str) -> tuple[ScopeConflict, ...]:
+        if new_name.isidentifier() and not keyword.iskeyword(new_name):
+            return ()
+        return (
+            ScopeConflict(
+                path=self.project_root,
+                line=0,
+                column=0,
+                message=f"{new_name!r} is not a valid Python identifier",
+            ),
+        )
+
+    def _scope_conflicts(
+        self, file_changes: tuple[FileChange, ...], new_name: str
+    ) -> tuple[ScopeConflict, ...]:
+        conflicts: list[ScopeConflict] = []
+        for file_change in file_changes:
+            try:
+                tree = ast.parse(file_change.new_text, filename=str(file_change.path))
+            except SyntaxError as exc:
+                conflicts.append(
+                    ScopeConflict(
+                        path=file_change.path,
+                        line=exc.lineno or 0,
+                        column=exc.offset or 0,
+                        message=f"renamed file no longer parses: {exc.msg}",
+                    )
+                )
+                continue
+            conflicts.extend(_find_duplicate_bindings(file_change.path, tree, new_name))
+        return tuple(conflicts)
+
 
 def _as_change_list(changes: Any) -> list[Change]:
     return [change for change in changes if isinstance(change, Change)]
+
+
+def _find_duplicate_bindings(path: Path, tree: ast.AST, name: str) -> list[ScopeConflict]:
+    conflicts: list[ScopeConflict] = []
+    for scope in ast.walk(tree):
+        names: dict[str, list[ast.AST]] = {}
+        if isinstance(scope, ast.Module | ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+            body = scope.body
+        else:
+            continue
+
+        for child in body:
+            for bound_name, node in _bound_names(child):
+                names.setdefault(bound_name, []).append(node)
+
+        duplicate_nodes = names.get(name, [])
+        if len(duplicate_nodes) > 1:
+            node = duplicate_nodes[1]
+            conflicts.append(
+                ScopeConflict(
+                    path=path,
+                    line=getattr(node, "lineno", 0),
+                    column=getattr(node, "col_offset", 0),
+                    message=f"name {name!r} already exists in this scope",
+                )
+            )
+    return conflicts
+
+
+def _bound_names(node: ast.AST) -> list[tuple[str, ast.AST]]:
+    if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+        return [(node.name, node)]
+    if isinstance(node, ast.Assign | ast.AnnAssign):
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        return [
+            (target.id, target)
+            for target in ast.walk(ast.Module(body=targets, type_ignores=[]))
+            if isinstance(target, ast.Name) and isinstance(target.ctx, ast.Store)
+        ]
+    if isinstance(node, ast.arg):
+        return [(node.arg, node)]
+    if isinstance(node, ast.Import | ast.ImportFrom):
+        return [(alias.asname or alias.name.split(".", maxsplit=1)[0], node) for alias in node.names]
+    return []
