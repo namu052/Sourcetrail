@@ -76,6 +76,37 @@ def test_rope_rename_service_applies_symbol_kinds(
     assert target.read_text(encoding="utf-8") == source
 
 
+@pytest.mark.unit
+def test_rope_rename_service_tracks_override_methods(tmp_path: Path) -> None:
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+    target = project_root / "models.py"
+    source = (
+        "class Base:\n"
+        "    def render(self):\n"
+        "        return 'base'\n\n"
+        "class Child(Base):\n"
+        "    def render(self):\n"
+        "        return 'child'\n\n"
+        "value = Child().render()\n"
+    )
+    target.write_text(source, encoding="utf-8")
+    db_path = tmp_path / "project.srctrldb"
+    node_id = _record_symbol(db_path, target, "render", NodeType.NODE_METHOD, 2, 8)
+
+    service = RopeRenameService(project_root, db_path)
+    preview = service.preview(node_id, "draw")
+    result = service.apply(preview)
+    renamed = target.read_text(encoding="utf-8")
+
+    assert "def draw(self)" in renamed
+    assert "Child().draw()" in renamed
+    assert "def render(self)" not in renamed
+
+    service.undo(result)
+    assert target.read_text(encoding="utf-8") == source
+
+
 def _record_symbol(
     db_path: Path,
     target: Path,

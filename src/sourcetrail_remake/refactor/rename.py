@@ -110,7 +110,11 @@ class RopeRenameService:
         try:
             resource = self.file_resource(project, target.file_path)
             offset = self._offset_from_line_column(target.file_path, target.line, target.column)
-            rope_changes = Rename(project, resource, offset).get_changes(new_name, docs=True)
+            rope_changes = Rename(project, resource, offset).get_changes(
+                new_name,
+                docs=True,
+                in_hierarchy=True,
+            )
             file_changes = tuple(self._file_changes(rope_changes))
             return RenamePreview(
                 node_id=node_id,
