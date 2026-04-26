@@ -95,7 +95,6 @@ class SymbolFuzzyIndex:
             index: entry.choice
             for index, entry in enumerate(entries)
             if entry.symbol.node_id not in ranked
-            and self._could_match_fuzzy(normalized_query, entry)
         }
         fuzzy_matches = process.extract(
             query,
@@ -151,14 +150,6 @@ class SymbolFuzzyIndex:
             return 2
         return 1
 
-    def _could_match_fuzzy(self, normalized_query: str, entry: _SearchEntry) -> bool:
-        return (
-            normalized_query in entry.normalized_name
-            or normalized_query in entry.normalized_fqn
-            or _is_subsequence(normalized_query, entry.normalized_name)
-            or _is_subsequence(normalized_query, entry.normalized_fqn)
-        )
-
     def _subsequence_score(self, normalized_query: str, entry: _SearchEntry) -> float:
         target = entry.normalized_name
         position = -1
@@ -202,11 +193,3 @@ def _exact_lookup(entries: Iterable[_SearchEntry]) -> dict[str, tuple[_SearchEnt
             lookup.setdefault(entry.normalized_fqn, []).append(entry)
     return {key: tuple(value) for key, value in lookup.items()}
 
-
-def _is_subsequence(needle: str, haystack: str) -> bool:
-    position = -1
-    for char in needle:
-        position = haystack.find(char, position + 1)
-        if position < 0:
-            return False
-    return True
