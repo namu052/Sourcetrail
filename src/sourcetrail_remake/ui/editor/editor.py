@@ -60,6 +60,23 @@ class QScintillaEditor(QsciScintilla):
         self.setFocus()
         self._emit_cursor_moved()
 
+    def highlight_range(
+        self,
+        *,
+        start_line: int,
+        start_column: int,
+        end_line: int,
+        end_column: int,
+    ) -> None:
+        """Select a one-based source range in the editor."""
+        self.setSelection(
+            max(start_line - 1, 0),
+            max(start_column, 0),
+            max(end_line - 1, 0),
+            max(end_column, 0),
+        )
+        self.ensureLineVisible(max(start_line - 1, 0))
+
     def _configure_base_editor(self) -> None:
         self.setUtf8(True)
         lexer = QsciLexerPython(self)

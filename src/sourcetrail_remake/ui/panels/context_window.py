@@ -92,6 +92,12 @@ class ContextWindow(QDockWidget):
         )
         self.preview.load_text(context.source, path=context.file_path)
         self.preview.goto_line(context.location.start_line)
+        self.preview.highlight_range(
+            start_line=context.location.start_line,
+            start_column=context.location.start_column,
+            end_line=context.location.end_line,
+            end_column=context.location.end_column,
+        )
         self.open_button.setEnabled(True)
 
     def _show_empty_context(self, file: str, line: int, col: int) -> None:
