@@ -1,0 +1,24 @@
+{
+  "counts": {
+    "edge": 76,
+    "file": 1,
+    "node": 62,
+    "occurrence": 140,
+    "source_location": 79,
+    "symbol": 61
+  },
+  "db_path": "C:\\Users\\Public\\Documents\\ESTsoft\\CreatorTemp\\srm-compat-bi6pt5n2\\sample-minimal.srctrldb",
+  "fixture": "C:\\Users\\PC\\vibecoding_master\\PRD_ClaudeCode\\Sourcetrail_Remake\\tests\\fixtures\\sample-minimal",
+  "foreign_key_violations": [],
+  "index_result": {
+    "duration_seconds": 0.7007867000065744,
+    "edges_recorded": 76,
+    "files_indexed": 1,
+    "symbols_recorded": 61,
+    "unsolved_symbols": 47
+  },
+  "missing_columns": {},
+  "missing_tables": [],
+  "original_sourcetrail_gui": "not_available_in_automated_check",
+  "status": "pass"
+}

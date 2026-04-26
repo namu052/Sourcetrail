@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import QObject, QStringListModel, Qt, pyqtSignal
+from PyQt6.QtCore import QStringListModel, Qt, pyqtSignal
 from PyQt6.QtWidgets import QCompleter, QHBoxLayout, QLineEdit, QWidget
 from rapidfuzz import fuzz, process
 
@@ -14,7 +14,7 @@ class SymbolSearchBar(QWidget):
 
     search_requested = pyqtSignal(str)
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("symbol-search-bar")
         self._catalog: tuple[GraphNodeRecord, ...] = ()

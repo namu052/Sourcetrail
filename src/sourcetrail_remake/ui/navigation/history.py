@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QHBoxLayout, QMenu, QToolButton, QWidget
 
@@ -17,7 +17,7 @@ class HistoryNavigator(QWidget):
     home_requested = pyqtSignal()
     history_requested = pyqtSignal(object)
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("history-navigator")
 

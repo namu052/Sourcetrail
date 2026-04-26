@@ -13,11 +13,11 @@ from time import perf_counter
 from PyQt6.QtCore import QThread, pyqtSignal
 
 from sourcetrail_remake.core.types import (
+    DefinitionKind,
     EdgeType,
     FileId,
-    DefinitionKind,
-    IndexResult,
     IndexingMode,
+    IndexResult,
     NameOccurrence,
     NodeId,
     ParsedModule,
@@ -298,7 +298,9 @@ class IndexerService:
             duration_seconds=0.0,
         )
 
-    def _prepare_index(self, modules: Iterable[ParsedModule], writer: DatabaseWriter) -> _PreparedIndex:
+    def _prepare_index(
+        self, modules: Iterable[ParsedModule], writer: DatabaseWriter
+    ) -> _PreparedIndex:
         indexed_modules: list[_IndexedModule] = []
         symbols_by_short_name: dict[str, list[ParsedSymbol]] = defaultdict(list)
         symbol_nodes: dict[str, NodeId] = {}
@@ -323,7 +325,9 @@ class IndexerService:
                     access_kind=symbol.access,
                 )
                 symbol_nodes[symbol.qualified_name] = node_id
-                symbol_positions[(symbol.path, symbol.location.start_line, symbol.location.start_column)] = node_id
+                symbol_positions[
+                    (symbol.path, symbol.location.start_line, symbol.location.start_column)
+                ] = node_id
                 symbols_by_short_name[symbol.name].append(symbol)
 
         for indexed in indexed_modules:
@@ -443,9 +447,15 @@ class IndexerService:
             return external_node
         return None
 
-    def _edge_type_for_occurrence(self, indexed: _IndexedModule, occurrence: NameOccurrence) -> EdgeType:
+    def _edge_type_for_occurrence(
+        self, indexed: _IndexedModule, occurrence: NameOccurrence
+    ) -> EdgeType:
         line_number = occurrence.location.start_line - 1
-        line_text = indexed.source_lines[line_number] if 0 <= line_number < len(indexed.source_lines) else ""
+        line_text = (
+            indexed.source_lines[line_number]
+            if 0 <= line_number < len(indexed.source_lines)
+            else ""
+        )
         return classify_edge_type(
             line_text,
             column=occurrence.location.start_column,
@@ -459,7 +469,9 @@ class IndexerService:
             return False
         return True
 
-    def _should_ignore_occurrence(self, indexed: _IndexedModule, occurrence: NameOccurrence) -> bool:
+    def _should_ignore_occurrence(
+        self, indexed: _IndexedModule, occurrence: NameOccurrence
+    ) -> bool:
         if occurrence.name in IGNORED_REFERENCE_NAMES:
             return True
         return (

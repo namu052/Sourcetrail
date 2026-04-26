@@ -33,9 +33,12 @@ class DatabaseWriter:
         self.connection.execute("PRAGMA foreign_keys = ON;")
         self.connection.execute("PRAGMA journal_mode = WAL;")
         self._files_by_path: dict[Path, FileId] = {}
-        self._symbols_by_key: dict[tuple[str, int, int, int | None], NodeId] = {}
+        self._symbols_by_key: dict[
+            tuple[str, int, int, tuple[int, int, int, int, int] | None], NodeId
+        ] = {}
         self._edges_by_key: dict[tuple[int, int, int], EdgeId] = {}
         self._locations_by_key: dict[tuple[int, int, int, int, int, int], LocationId] = {}
+        self._node_files: set[tuple[int, int]] = set()
         self._node_extensions: set[tuple[int, str]] = set()
         self._edge_extensions: set[tuple[int, str, str | None]] = set()
         self._next_element_id = 1
@@ -62,7 +65,9 @@ class DatabaseWriter:
     def insert_meta(self, key: str, value: str) -> None:
         row = self.connection.execute("SELECT id FROM meta WHERE key = ?;", (key,)).fetchone()
         if row is None:
-            next_id = self.connection.execute("SELECT COALESCE(MAX(id), 0) + 1 FROM meta;").fetchone()
+            next_id = self.connection.execute(
+                "SELECT COALESCE(MAX(id), 0) + 1 FROM meta;"
+            ).fetchone()
             assert next_id is not None
             self.connection.execute(
                 "INSERT INTO meta(id, key, value) VALUES(?, ?, ?);",
@@ -102,6 +107,7 @@ class DatabaseWriter:
             "INSERT INTO filecontent(id, content) VALUES(?, ?);",
             (int(file_id), text),
         )
+        self._record_node_file(NodeId(int(file_id)), file_id)
         self._files_by_path[resolved_path] = file_id
         return file_id
 
@@ -118,13 +124,17 @@ class DatabaseWriter:
     ) -> NodeId:
         serialized_name = qualified_name or name
         file_key = int(file) if file is not None else 0
-        location_key = None if location is None else (
-            (
-                location.start_line,
-                location.start_column,
-                location.end_line,
-                location.end_column,
-                int(location.type),
+        location_key = (
+            None
+            if location is None
+            else (
+                (
+                    location.start_line,
+                    location.start_column,
+                    location.end_line,
+                    location.end_column,
+                    int(location.type),
+                )
             )
         )
         key = (serialized_name, int(node_type), file_key, location_key)
@@ -151,6 +161,8 @@ class DatabaseWriter:
             )
         if file is not None and location is not None:
             self.record_occurrence(node_id, self.record_source_location(file, location))
+        if file is not None:
+            self._record_node_file(node_id, file)
         self._symbols_by_key[key] = node_id
         return node_id
 
@@ -221,7 +233,9 @@ class DatabaseWriter:
         self._locations_by_key[key] = location_id
         return location_id
 
-    def record_occurrence(self, element_id: NodeId | EdgeId, source_location_id: LocationId) -> None:
+    def record_occurrence(
+        self, element_id: NodeId | EdgeId, source_location_id: LocationId
+    ) -> None:
         self.connection.execute(
             "INSERT OR IGNORE INTO occurrence(element_id, source_location_id) VALUES(?, ?);",
             (int(element_id), int(source_location_id)),
@@ -248,7 +262,10 @@ class DatabaseWriter:
         extension_key = (int(node_id), "unsolved")
         if extension_key not in self._node_extensions:
             self.connection.execute(
-                "INSERT INTO node_extension(node_id, kind, confidence, metadata) VALUES(?, ?, ?, ?);",
+                (
+                    "INSERT INTO node_extension(node_id, kind, confidence, metadata) "
+                    "VALUES(?, ?, ?, ?);"
+                ),
                 (
                     int(node_id),
                     "unsolved",
@@ -314,9 +331,23 @@ class DatabaseWriter:
         return location_id
 
     def _prime_counters(self) -> None:
-        element_row = self.connection.execute("SELECT COALESCE(MAX(id), 0) FROM element;").fetchone()
-        location_row = self.connection.execute("SELECT COALESCE(MAX(id), 0) FROM source_location;").fetchone()
+        element_row = self.connection.execute(
+            "SELECT COALESCE(MAX(id), 0) FROM element;"
+        ).fetchone()
+        location_row = self.connection.execute(
+            "SELECT COALESCE(MAX(id), 0) FROM source_location;"
+        ).fetchone()
         assert element_row is not None
         assert location_row is not None
         self._next_element_id = int(element_row[0]) + 1
         self._next_location_id = int(location_row[0]) + 1
+
+    def _record_node_file(self, node_id: NodeId, file_id: FileId) -> None:
+        key = (int(node_id), int(file_id))
+        if key in self._node_files:
+            return
+        self.connection.execute(
+            "INSERT OR IGNORE INTO node_file(node_id, file_node_id) VALUES(?, ?);",
+            key,
+        )
+        self._node_files.add(key)

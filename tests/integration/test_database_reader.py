@@ -109,7 +109,9 @@ def test_database_reader_loads_graph_neighborhood() -> None:
         assert nodes_by_id[method_id].parent_id == class_id
         assert nodes_by_id[class_id].member_count == 1
         assert any(
-            edge.source == method_id and edge.target == external_id and edge.edge_type == EdgeType.EDGE_CALL
+            edge.source == method_id
+            and edge.target == external_id
+            and edge.edge_type == EdgeType.EDGE_CALL
             for edge in graph.edges
         )
     finally:

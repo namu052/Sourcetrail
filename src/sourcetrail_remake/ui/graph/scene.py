@@ -86,6 +86,7 @@ class GraphScene(QGraphicsScene):
         self._member_nodes_by_parent.clear()
         self._collapsed_nodes.clear()
         text_item = self.addSimpleText(message)
+        assert text_item is not None
         text_item.setBrush(QBrush(QColor("#6b7280")))
         text_item.setPos(32, 32)
         self.setSceneRect(0, 0, 960, 540)
@@ -234,6 +235,7 @@ class GraphScene(QGraphicsScene):
         *,
         expand: bool,
     ) -> None:
+        self._stop_active_animations()
         parent_item = self._node_items.get(parent_id)
         if parent_item is None:
             return
@@ -259,6 +261,30 @@ class GraphScene(QGraphicsScene):
             animation.start()
             self._active_animations.append(animation)
         self._sync_edge_visibility(child_ids, visible=expand)
+        self._finalize_child_node_state(parent_id, child_ids, expand=expand)
+
+    def _finalize_child_node_state(
+        self,
+        parent_id: NodeId,
+        child_ids: list[NodeId],
+        *,
+        expand: bool,
+    ) -> None:
+        parent_item = self._node_items.get(parent_id)
+        collapsed_origin = (
+            parent_item.pos() + QPointF(28, 68) if parent_item is not None else QPointF()
+        )
+        for index, child_id in enumerate(child_ids):
+            child_item = self._node_items.get(child_id)
+            if child_item is None:
+                continue
+            child_item.setOpacity(1.0 if expand else 0.0)
+            child_item.setPos(
+                self._node_positions.get(child_id, child_item.pos())
+                if expand
+                else collapsed_origin + QPointF(index * 6, index * 6)
+            )
+            child_item.setVisible(expand)
 
     def _build_node_animation(
         self,
@@ -297,6 +323,11 @@ class GraphScene(QGraphicsScene):
             for active_animation in self._active_animations
             if active_animation is not animation
         ]
+
+    def _stop_active_animations(self) -> None:
+        for animation in self._active_animations:
+            animation.stop()
+        self._active_animations.clear()
 
     def _sync_edge_visibility(self, child_ids: list[NodeId], *, visible: bool) -> None:
         child_id_set = set(child_ids)

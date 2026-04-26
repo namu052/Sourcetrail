@@ -17,7 +17,9 @@ def test_map_name_type_promotes_methods_and_builtins() -> None:
     project_root = Path("tests/fixtures/sample-minimal")
     parent = next(
         symbol
-        for symbol in ParsoWalker(project_root).parse_module(project_root / "session_manager.py").symbols
+        for symbol in ParsoWalker(project_root)
+        .parse_module(project_root / "session_manager.py")
+        .symbols
         if symbol.qualified_name == "session_manager.Session"
     )
 
@@ -28,8 +30,13 @@ def test_map_name_type_promotes_methods_and_builtins() -> None:
 
 @pytest.mark.unit
 def test_classify_edge_type_handles_imports_calls_and_member_access() -> None:
-    assert classify_edge_type("from flask import Flask", column=18, name="Flask").name == "EDGE_IMPORT"
-    assert classify_edge_type("response = requests.get(url)", column=20, name="get").name == "EDGE_CALL"
+    assert (
+        classify_edge_type("from flask import Flask", column=18, name="Flask").name == "EDGE_IMPORT"
+    )
+    assert (
+        classify_edge_type("response = requests.get(url)", column=20, name="get").name
+        == "EDGE_CALL"
+    )
     assert classify_edge_type("manager.sessions", column=8, name="sessions").name == "EDGE_MEMBER"
     assert classify_edge_type("return session", column=7, name="session").name == "EDGE_USAGE"
 

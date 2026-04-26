@@ -1,0 +1,22 @@
+{
+  "benchmarks": {
+    "graph_first_render_seconds": 0.024654600012581795,
+    "synthetic_10k_loc_shallow_index_seconds": 6.2273888000054285
+  },
+  "created_at": "2026-04-26T01:44:29.501049+00:00",
+  "index_result": {
+    "edges_recorded": 8950,
+    "files_indexed": 50,
+    "symbols_recorded": 8950,
+    "unsolved_symbols": 2000
+  },
+  "notes": [
+    "Native fallback benchmark; pytest-benchmark is not installed.",
+    "G2 100k LoC 60fps remains a separate manual/performance-lab gate."
+  ],
+  "status": "pass",
+  "thresholds": {
+    "graph_first_render_seconds": 0.5,
+    "synthetic_10k_loc_shallow_index_seconds": 60.0
+  }
+}

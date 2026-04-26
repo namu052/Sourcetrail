@@ -8,7 +8,7 @@ from typing import NewType
 
 from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QColor, QPainter, QPainterPath, QPen, QPolygonF
-from PyQt6.QtWidgets import QGraphicsPathItem
+from PyQt6.QtWidgets import QGraphicsPathItem, QStyleOptionGraphicsItem, QWidget
 
 from sourcetrail_remake.core.types import EdgeId, EdgeType, GraphEdgeRecord, NodeId
 
@@ -49,10 +49,12 @@ class RenderedEdgeItem(QGraphicsPathItem):
 
     def paint(
         self,
-        painter: QPainter,
-        option: object,
-        widget: object | None = None,
+        painter: QPainter | None,
+        option: QStyleOptionGraphicsItem | None,
+        widget: QWidget | None = None,
     ) -> None:
+        if painter is None:
+            return
         super().paint(painter, option, widget)
         painter.setBrush(self.color)
         painter.setPen(Qt.PenStyle.NoPen)
@@ -62,11 +64,7 @@ class RenderedEdgeItem(QGraphicsPathItem):
             painter.setBrush(QColor("#ffffff"))
             painter.setPen(QPen(self.color, 2))
             painter.drawEllipse(midpoint, 10, 10)
-            painter.drawText(
-                midpoint.x() - 5,
-                midpoint.y() + 4,
-                str(self.bundle_count),
-            )
+            painter.drawText(QPointF(midpoint.x() - 5, midpoint.y() + 4), str(self.bundle_count))
 
 
 class EdgeRenderer:

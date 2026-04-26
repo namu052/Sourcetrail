@@ -75,10 +75,7 @@ class DatabaseReader:
             parameters.append(limit)
 
         with sqlite3.connect(self.db_path) as connection:
-            node_ids = {
-                int(row[0])
-                for row in connection.execute(query, parameters).fetchall()
-            }
+            node_ids = {int(row[0]) for row in connection.execute(query, parameters).fetchall()}
             return self._load_nodes(connection, node_ids)
 
     def list_unsolved(self) -> list[tuple[NodeId, str]]:
@@ -210,11 +207,7 @@ class DatabaseReader:
         parent_ids = {
             int(row[0]): NodeId(int(row[1]))
             for row in connection.execute(
-                (
-                    "SELECT target_node_id, source_node_id "
-                    "FROM edge "
-                    "WHERE type = ?;"
-                ),
+                ("SELECT target_node_id, source_node_id FROM edge WHERE type = ?;"),
                 (int(EdgeType.EDGE_MEMBER),),
             ).fetchall()
         }

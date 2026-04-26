@@ -17,7 +17,9 @@ JEDI_TYPE_TO_NODE_TYPE: dict[str, NodeType] = {
 }
 
 
-def map_name_type(name_type: str, *, parent: ParsedSymbol | None = None, is_builtin: bool = False) -> NodeType:
+def map_name_type(
+    name_type: str, *, parent: ParsedSymbol | None = None, is_builtin: bool = False
+) -> NodeType:
     """Map Jedi's name types onto Sourcetrail-compatible node types."""
     if is_builtin:
         return NodeType.NODE_BUILTIN_TYPE

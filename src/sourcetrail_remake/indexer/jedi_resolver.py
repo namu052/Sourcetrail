@@ -67,10 +67,14 @@ class JediResolver:
     ) -> list[NameOccurrence]:
         script = self._script(source, path)
         references: list[NameOccurrence] = []
-        for name in script.get_references(line=line, column=column, include_builtins=include_builtins):
+        for name in script.get_references(
+            line=line, column=column, include_builtins=include_builtins
+        ):
             if name.line is None or name.column is None:
                 continue
-            occurrence_path = Path(str(name.module_path)).resolve() if name.module_path else Path(path).resolve()
+            occurrence_path = (
+                Path(str(name.module_path)).resolve() if name.module_path else Path(path).resolve()
+            )
             references.append(self._convert_name_occurrence(name, occurrence_path))
         return references
 

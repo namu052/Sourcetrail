@@ -24,6 +24,7 @@ REQUIRED_TABLES = (
     "symbol",
     "file",
     "filecontent",
+    "node_file",
     "local_symbol",
     "source_location",
     "occurrence",
@@ -74,6 +75,13 @@ SCHEMA_SQL = (
         "FOREIGN KEY(id) REFERENCES file(id) ON DELETE CASCADE ON UPDATE CASCADE);"
     ),
     (
+        "CREATE TABLE IF NOT EXISTS node_file("
+        "node_id INTEGER NOT NULL, file_node_id INTEGER NOT NULL, "
+        "PRIMARY KEY(node_id, file_node_id), "
+        "FOREIGN KEY(node_id) REFERENCES node(id) ON DELETE CASCADE, "
+        "FOREIGN KEY(file_node_id) REFERENCES file(id) ON DELETE CASCADE);"
+    ),
+    (
         "CREATE TABLE IF NOT EXISTS local_symbol("
         "id INTEGER NOT NULL, name TEXT, PRIMARY KEY(id), "
         "FOREIGN KEY(id) REFERENCES element(id) ON DELETE CASCADE);"
@@ -108,10 +116,17 @@ INDEX_SQL = (
     "CREATE INDEX IF NOT EXISTS edge_source_node_id_index ON edge(source_node_id);",
     "CREATE INDEX IF NOT EXISTS edge_target_node_id_index ON edge(target_node_id);",
     "CREATE INDEX IF NOT EXISTS node_serialized_name_index ON node(serialized_name);",
-    "CREATE INDEX IF NOT EXISTS source_location_file_node_id_index ON source_location(file_node_id);",
+    (
+        "CREATE INDEX IF NOT EXISTS source_location_file_node_id_index "
+        "ON source_location(file_node_id);"
+    ),
     "CREATE INDEX IF NOT EXISTS file_path_index ON file(path);",
+    "CREATE INDEX IF NOT EXISTS node_file_file_node_id_index ON node_file(file_node_id);",
     "CREATE INDEX IF NOT EXISTS occurrence_element_id_index ON occurrence(element_id);",
-    "CREATE INDEX IF NOT EXISTS occurrence_source_location_id_index ON occurrence(source_location_id);",
+    (
+        "CREATE INDEX IF NOT EXISTS occurrence_source_location_id_index "
+        "ON occurrence(source_location_id);"
+    ),
 )
 
 EXTENSION_SQL = (
@@ -131,8 +146,12 @@ EXTENSION_SQL = (
 
 NODE_KIND_VALUES = {node_type.name: int(node_type) for node_type in NodeType}
 EDGE_TYPE_VALUES = {edge_type.name: int(edge_type) for edge_type in EdgeType}
-DEFINITION_KIND_VALUES = {definition_kind.name: int(definition_kind) for definition_kind in DefinitionKind}
-SOURCE_LOCATION_VALUES = {location_type.name: int(location_type) for location_type in SourceLocationType}
+DEFINITION_KIND_VALUES = {
+    definition_kind.name: int(definition_kind) for definition_kind in DefinitionKind
+}
+SOURCE_LOCATION_VALUES = {
+    location_type.name: int(location_type) for location_type in SourceLocationType
+}
 ACCESS_KIND_VALUES = {access_kind.name: int(access_kind) for access_kind in AccessKind}
 
 

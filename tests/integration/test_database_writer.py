@@ -31,12 +31,16 @@ def test_database_writer_records_files_symbols_and_edges() -> None:
                 location,
                 qualified_name="session_manager.SessionManager",
             )
-            writer.record_edge(file_id, symbol_id, EdgeType.EDGE_MEMBER, file=file_id, location=location)
+            writer.record_edge(
+                file_id, symbol_id, EdgeType.EDGE_MEMBER, file=file_id, location=location
+            )
             writer.record_unsolved(
                 symbol_id,
                 "missing_cleanup_handler",
                 file=file_id,
-                location=SourceLocation.from_name(line=47, column=12, name="missing_cleanup_handler"),
+                location=SourceLocation.from_name(
+                    line=47, column=12, name="missing_cleanup_handler"
+                ),
             )
             summary = writer.summary()
 

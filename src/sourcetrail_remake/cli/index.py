@@ -4,18 +4,21 @@ from __future__ import annotations
 
 import argparse
 import logging
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from PyQt6.QtCore import QCoreApplication
 
+from sourcetrail_remake.core.types import IndexingMode
 from sourcetrail_remake.indexer.service import IndexerService, IndexingWorker
 
 logger = logging.getLogger(__name__)
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Index a Python project into a Sourcetrail-compatible DB.")
+    parser = argparse.ArgumentParser(
+        description="Index a Python project into a Sourcetrail-compatible DB."
+    )
     parser.add_argument("project_path", type=Path, help="Project directory to index.")
     parser.add_argument("--db", type=Path, default=None, help="Destination .srctrldb path.")
     mode_group = parser.add_mutually_exclusive_group()
@@ -34,8 +37,10 @@ def main(argv: list[str] | None = None) -> int:
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     project_path = args.project_path.resolve()
-    db_path = args.db.resolve() if args.db is not None else Path.cwd() / f"{project_path.name}.srctrldb"
-    mode = "deep" if args.deep else "shallow"
+    db_path = (
+        args.db.resolve() if args.db is not None else Path.cwd() / f"{project_path.name}.srctrldb"
+    )
+    mode: IndexingMode = "deep" if args.deep else "shallow"
 
     app = QCoreApplication.instance()
     if app is None:

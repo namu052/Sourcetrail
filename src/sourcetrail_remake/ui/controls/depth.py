@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import QObject, Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import QLabel, QSlider, QVBoxLayout, QWidget
 
 
@@ -11,7 +11,7 @@ class DepthControl(QWidget):
 
     value_changed = pyqtSignal(int)
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("depth-control")
 

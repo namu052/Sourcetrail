@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtGui import QBrush, QColor, QPainter, QPen
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsObject
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsObject, QStyleOptionGraphicsItem, QWidget
 
 from sourcetrail_remake.core.types import NodeType
 
@@ -30,11 +30,13 @@ class ClassContainerItem(QGraphicsObject):
 
     def paint(
         self,
-        painter: QPainter,
-        option: object,
-        widget: object | None = None,
+        painter: QPainter | None,
+        option: QStyleOptionGraphicsItem | None,
+        widget: QWidget | None = None,
     ) -> None:
         del option, widget
+        if painter is None:
+            return
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
         fill = QColor("#fff7d6") if self._selected else QColor("#fffdf7")
@@ -88,11 +90,13 @@ class MemberNodeItem(QGraphicsObject):
 
     def paint(
         self,
-        painter: QPainter,
-        option: object,
-        widget: object | None = None,
+        painter: QPainter | None,
+        option: QStyleOptionGraphicsItem | None,
+        widget: QWidget | None = None,
     ) -> None:
         del option, widget
+        if painter is None:
+            return
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
         fill = QColor("#eff6ff") if self._selected else QColor("#ffffff")
@@ -144,11 +148,13 @@ class UnsolvedNodeItem(QGraphicsObject):
 
     def paint(
         self,
-        painter: QPainter,
-        option: object,
-        widget: object | None = None,
+        painter: QPainter | None,
+        option: QStyleOptionGraphicsItem | None,
+        widget: QWidget | None = None,
     ) -> None:
         del option, widget
+        if painter is None:
+            return
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
         fill_color = QColor("#f5ead9")

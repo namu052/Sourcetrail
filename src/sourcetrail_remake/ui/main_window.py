@@ -246,9 +246,8 @@ class MainWindow(QMainWindow):
         self.focus_symbol(node_id, record_history=False)
 
     def _on_symbol_selected(self, node_id: object) -> None:
-        if not isinstance(node_id, int):
-            node_id = int(node_id)
-        self.focus_symbol(NodeId(node_id))
+        node_id_value = node_id if isinstance(node_id, int) else int(str(node_id))
+        self.focus_symbol(NodeId(node_id_value))
 
     def _update_selection_panel(self, symbol: GraphNodeRecord) -> None:
         self.selection_name_label.setText(symbol.display_name)
@@ -295,10 +294,7 @@ class MainWindow(QMainWindow):
             has_home=self.home_symbol_id is not None,
         )
         self.history_navigator.set_entries(
-            [
-                (entry, self._history_label(entry))
-                for entry in self.history_entries
-            ],
+            [(entry, self._history_label(entry)) for entry in self.history_entries],
             current_index=self.history_index,
         )
 
@@ -342,9 +338,7 @@ class MainWindow(QMainWindow):
             self.event_bus.bookmark_added.emit(node_id)
         status_bar = self.statusBar()
         assert status_bar is not None
-        status_bar.showMessage(
-            "Bookmark added" if added else f"Bookmark removed: {int(node_id)}"
-        )
+        status_bar.showMessage("Bookmark added" if added else f"Bookmark removed: {int(node_id)}")
 
 
 def create_main_window(

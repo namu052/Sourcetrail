@@ -22,6 +22,11 @@ ts=$(date +%Y%m%d-%H%M%S)
 out="docs/generated/bench/${ts}.json"
 
 echo "== benchmarks → $out =="
+if ! find tests/performance -name 'test_*.py' -print -quit | grep -q .; then
+  echo "bench: no pytest performance tests found; running native Phase 1 fallback."
+  exec uv run python scripts/bench_phase1.py "$out"
+fi
+
 exec uv run pytest tests/performance -m performance \
   --benchmark-json="$out" \
   "$@"

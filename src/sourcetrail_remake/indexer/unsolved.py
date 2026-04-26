@@ -50,7 +50,9 @@ class UnsolvedSymbolTracker:
             metadata=payload,
         )
         if key not in self._entries:
-            self._entries[key] = UnsolvedSymbol(context_node=context_node, name=name, node_id=node_id)
+            self._entries[key] = UnsolvedSymbol(
+                context_node=context_node, name=name, node_id=node_id
+            )
         writer.record_edge(context_node, node_id, edge_type, file=file, location=location)
         return node_id
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import QObject, Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QMenu, QToolButton, QVBoxLayout, QWidget
 
@@ -15,7 +15,7 @@ class BookmarkControl(QWidget):
     bookmark_selected = pyqtSignal(object)
     bookmark_toggled = pyqtSignal(object, bool)
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("bookmark-control")
         self.current_symbol: GraphNodeRecord | None = None

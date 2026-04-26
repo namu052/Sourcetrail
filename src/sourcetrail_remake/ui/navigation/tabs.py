@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import QObject, QSize, Qt, pyqtSignal
+from PyQt6.QtCore import QSize, Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap
-from PyQt6.QtWidgets import QTabBar
+from PyQt6.QtWidgets import QTabBar, QWidget
 
 from sourcetrail_remake.core.types import GraphNodeRecord, NodeId, NodeType
 
@@ -14,7 +14,7 @@ class SymbolTabBar(QTabBar):
 
     symbol_requested = pyqtSignal(object)
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("symbol-tab-bar")
         self.setDocumentMode(True)

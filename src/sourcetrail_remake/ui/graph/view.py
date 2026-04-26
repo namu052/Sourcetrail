@@ -68,8 +68,12 @@ class GraphView(QGraphicsView):
         if self._last_pan_pos is not None:
             delta = event.position().toPoint() - self._last_pan_pos
             self._last_pan_pos = event.position().toPoint()
-            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
-            self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+            horizontal_scrollbar = self.horizontalScrollBar()
+            vertical_scrollbar = self.verticalScrollBar()
+            assert horizontal_scrollbar is not None
+            assert vertical_scrollbar is not None
+            horizontal_scrollbar.setValue(horizontal_scrollbar.value() - delta.x())
+            vertical_scrollbar.setValue(vertical_scrollbar.value() - delta.y())
             event.accept()
             return
         super().mouseMoveEvent(event)

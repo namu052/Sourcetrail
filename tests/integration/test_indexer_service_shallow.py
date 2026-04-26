@@ -22,7 +22,9 @@ def test_indexer_service_shallow_indexes_sample_project() -> None:
     try:
         service = IndexerService(project_root, "shallow")
         with DatabaseWriter(db_path) as writer:
-            result = service.index(writer, lambda current, total: progress_events.append((current, total)))
+            result = service.index(
+                writer, lambda current, total: progress_events.append((current, total))
+            )
 
         reader = DatabaseReader(db_path)
         summary = reader.summary()

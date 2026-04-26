@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import parso
 
@@ -23,11 +24,13 @@ class ParsoWalker:
     def parse_module(self, path: Path) -> ParsedModule:
         resolved_path = Path(path).resolve()
         source = resolved_path.read_text(encoding="utf-8")
-        module = parso.parse(source)
+        module: Any = parso.parse(source)  # type: ignore[no-untyped-call]
         symbols: list[ParsedSymbol] = []
         keyword_argument_labels: set[tuple[int, int]] = set()
         module_name = self._module_name(resolved_path)
-        self._walk_children(module.children, module_path=resolved_path, module_name=module_name, symbols=symbols)
+        self._walk_children(
+            module.children, module_path=resolved_path, module_name=module_name, symbols=symbols
+        )
         self._collect_keyword_argument_labels(module, keyword_argument_labels)
         return ParsedModule(
             path=resolved_path,
@@ -41,7 +44,7 @@ class ParsoWalker:
 
     def _walk_children(
         self,
-        children: list[object],
+        children: list[Any],
         *,
         module_path: Path,
         module_name: str,
@@ -81,7 +84,11 @@ class ParsoWalker:
                 )
                 continue
             if child_type == "funcdef":
-                node_type = NodeType.NODE_METHOD if owners and owners[-1].node_type == NodeType.NODE_CLASS else NodeType.NODE_FUNCTION
+                node_type = (
+                    NodeType.NODE_METHOD
+                    if owners and owners[-1].node_type == NodeType.NODE_CLASS
+                    else NodeType.NODE_FUNCTION
+                )
                 symbol = self._build_symbol(
                     module_path=module_path,
                     module_name=module_name,
@@ -114,7 +121,7 @@ class ParsoWalker:
 
     def _build_assignment_symbol(
         self,
-        node: object,
+        node: Any,
         *,
         module_path: Path,
         module_name: str,
@@ -191,7 +198,7 @@ class ParsoWalker:
 
     def _collect_keyword_argument_labels(
         self,
-        node: object,
+        node: Any,
         keyword_argument_labels: set[tuple[int, int]],
     ) -> None:
         if getattr(node, "type", None) == "argument":
